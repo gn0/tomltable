@@ -16,10 +16,10 @@ def load_json_file(filename):
 def nested_get(obj, *args):
     if len(args) == 0:
         return obj
-    elif isinstance(obj, list):
+    elif type(obj) is list:
         index = args[0]
 
-        if not isinstance(index, int):
+        if type(index) is not int:
             raise ValueError(
                 "Non-numeric index '{}' for object {}."
                 .format(index, obj))
@@ -33,7 +33,7 @@ def nested_get(obj, *args):
         #     raise ValueError(
         #         "Object {} has only {} elements.  Index {} is invalid."
         #         .format(obj, len(obj), index))
-    elif isinstance(obj, dict):
+    elif type(obj) is dict:
         key = args[0]
 
         if key in obj:
