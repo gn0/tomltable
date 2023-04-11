@@ -44,7 +44,7 @@ def nested_get(obj, *args):
         raise ValueError(f"Object {obj} is not a list or a dict.")
 
 
-def confirm_consistent_column_count(table_spec):
+def confirm_consistent_column_count(table_spec, json_filenames):
     sections = ("header", "body", "footer")
 
     def get_and_confirm_counts(section):
@@ -64,23 +64,59 @@ def confirm_consistent_column_count(table_spec):
 
         return counts_in_section
 
+    # Confirm consistency within section.
+    #
     counts = {section: get_and_confirm_counts(section)
               for section in sections}
 
+    # Confirm consistency across sections.
+    #
     for index, section_a in enumerate(sections):
         if len(counts[section_a]) == 0:
             continue
 
+        count_a = counts[section_a][0]
+
         for section_b in sections[index + 1:]:
-            if (len(counts[section_b]) > 0
-                and counts[section_a][0] != counts[section_b][0]):
+            if len(counts[section_b]) == 0:
+                continue
+
+            count_b = counts[section_b][0]
+
+            if count_a != count_b:
                 raise TableSpecificationError(
                     ("Inconsistent column counts: "
-                     + "{} has {} columns but {} has {}.")
+                     + "{} has {} {} but {} has {}.")
                     .format(section_a,
-                            counts[section_a][0],
+                            count_a,
+                            "columns" if count_a > 1 else "column",
                             section_b,
-                            counts[section_b][0]))
+                            count_b))
+
+    # Confirm consistency between the specification and the JSON files.
+    #
+
+    count_json = len(json_filenames)
+
+    for counts_in_section in counts.values():
+        if len(counts_in_section) == 0:
+            continue
+
+        count_section = counts_in_section[0]
+
+        if count_json != count_section:
+            raise Exception(
+                ("Table specification contains {} {} "
+                 + "but there {} only {} JSON {} passed "
+                 + "in the arguments.")
+                .format(
+                    count_section,
+                    "columns" if count_section > 1 else "column",
+                    "are" if count_json > 1 else "is",
+                    count_json,
+                    "files" if count_json > 1 else "file"))
+
+        break
 
 
 def get_column_count(table_spec):
@@ -91,11 +127,11 @@ def get_column_count(table_spec):
         if column_count > 1:
             return column_count
 
-    raise ValueError("No section that contains a row with cells.")
+    return None
 
 
 def print_header(table_spec, json_files):
-    column_count = get_column_count(table_spec)
+    column_count = get_column_count(table_spec) or len(json_files)
 
     print(r"\begin{tabular}{lc{%d}}" % column_count)
     print(r"\toprule")
@@ -106,13 +142,13 @@ def print_header(table_spec, json_files):
 
 
 def print_body(table_spec, json_files):
-    column_count = get_column_count(table_spec)
+    column_count = get_column_count(table_spec) or len(json_files)
 
     # TODO Print body.
 
 
 def print_footer(table_spec, json_files):
-    column_count = get_column_count(table_spec)
+    column_count = get_column_count(table_spec) or len(json_files)
 
     if "footer" in table_spec:
         print(r"\midrule")
@@ -133,7 +169,7 @@ def main(json_filename, debug=False):
 
     table_spec = toml.loads(sys.stdin.read())
 
-    confirm_consistent_column_count(table_spec)
+    confirm_consistent_column_count(table_spec, json_filename)
 
     json_files = list(load_json_file(filename)
                       for filename in json_filename)
