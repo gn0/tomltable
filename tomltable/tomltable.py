@@ -1,10 +1,16 @@
 import click
 import toml
+import json
 import sys
 
 
 class TableSpecificationError(ValueError):
     pass
+
+
+def load_json_file(filename):
+    with open(filename, "r") as f:
+        return json.load(f)
 
 
 def nested_get(obj, *args):
@@ -88,7 +94,7 @@ def get_column_count(table_spec):
     raise ValueError("No section that contains a row with cells.")
 
 
-def print_header(table_spec):
+def print_header(table_spec, json_files):
     column_count = get_column_count(table_spec)
 
     print(r"\begin{tabular}{lc{%d}}" % column_count)
@@ -99,13 +105,13 @@ def print_header(table_spec):
     print(r"\midrule")
 
 
-def print_body(table_spec):
+def print_body(table_spec, json_files):
     column_count = get_column_count(table_spec)
 
     # TODO Print body.
 
 
-def print_footer(table_spec):
+def print_footer(table_spec, json_files):
     column_count = get_column_count(table_spec)
 
     if "footer" in table_spec:
@@ -129,9 +135,12 @@ def main(json_filename, debug=False):
 
     confirm_consistent_column_count(table_spec)
 
-    print_header(table_spec)
-    print_body(table_spec)
-    print_footer(table_spec)
+    json_files = list(load_json_file(filename)
+                      for filename in json_filename)
+
+    print_header(table_spec, json_files)
+    print_body(table_spec, json_files)
+    print_footer(table_spec, json_files)
 
 
 if __name__ == "__main__":
