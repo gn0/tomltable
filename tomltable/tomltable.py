@@ -106,15 +106,17 @@ def confirm_consistent_column_count(table_spec, json_filenames):
 
         if count_json != count_section:
             raise Exception(
-                ("Table specification contains {} {} "
-                 + "but there {} only {} JSON {} passed "
-                 + "in the arguments.")
+                ("Table specification contains {}{} column{} "
+                 + "but there {} {}{} JSON file{} passed "
+                 + "in the command-line arguments.")
                 .format(
+                    "only " if count_section < count_json else "",
                     count_section,
-                    "columns" if count_section > 1 else "column",
+                    "s" if count_section > 1 else "",
                     "are" if count_json > 1 else "is",
+                    "only " if count_json < count_section else "",
                     count_json,
-                    "files" if count_json > 1 else "file"))
+                    "s" if count_json > 1 else ""))
 
         break
 
