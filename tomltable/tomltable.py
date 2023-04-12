@@ -165,7 +165,7 @@ def get_column_count(table_spec):
         column_count = len(
             nested_get(table_spec, section, "row", 0, "cell"))
 
-        if column_count > 1:
+        if column_count > 0:
             return column_count
 
     return None
