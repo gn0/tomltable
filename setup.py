@@ -8,7 +8,7 @@ setup(
     version='1.0',
     description=u'command-line tool to generate TOML-defined regression tables from JSON data files',
     author=u'Gabor Nyeki',
-    url='http://www.gabornyeki.com/',
+    url='https://www.gabornyeki.com/',
     packages=['tomltable'],
     install_requires=['click', 'toml'],
     provides=['tomltable (1.0)'],
