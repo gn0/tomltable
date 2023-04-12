@@ -2,6 +2,7 @@ import click
 import toml
 import json
 import sys
+import re
 
 
 class TableSpecificationError(ValueError):
@@ -11,6 +12,44 @@ class TableSpecificationError(ValueError):
 def load_json_file(filename):
     with open(filename, "r") as f:
         return json.load(f)
+
+
+def traverse(obj):
+    if type(obj) is dict:
+        for key, obj2 in obj.items():
+            for subpath, value in traverse(obj2):
+                if subpath is None:
+                    yield "%s" % key, value
+                else:
+                    yield "%s::%s" % (key, subpath), value
+    elif type(obj) is list:
+        for i, obj2 in enumerate(obj, 1):
+            for subpath, value in traverse(obj2):
+                if subpath is None:
+                    yield "%d" % i, value
+                else:
+                    yield "%d::%s" % (i, subpath), value
+    else:
+        yield None, obj
+
+
+def make_json_dict(json_files):
+    return dict(traverse(json_files))
+
+
+def add_thousands_separator(string):
+    def replace(match):
+        number = match.group(2)
+
+        if len(number) < 4:
+            return match.group(0)
+
+        for position in range(len(number) - 3, 0, -3):
+            number = number[:position] + "," + number[position:]
+
+        return "{}{}".format(match.group(1), number)
+
+    return re.sub(r"(^|[^.])([0-9]+)", replace, string)
 
 
 def nested_get(obj, *args):
@@ -132,40 +171,185 @@ def get_column_count(table_spec):
     return None
 
 
-def print_header(table_spec, json_files):
-    column_count = get_column_count(table_spec) or len(json_files)
-
-    print(r"\begin{tabular}{lc{%d}}" % column_count)
-    print(r"\toprule")
-
-    # TODO Print header.
-
-    print(r"\midrule")
+def escape_tex(value):
+    return (value
+            .replace("\\", "\\\\")
+            .replace("&", "\\&"))
 
 
-def print_body(table_spec, json_files):
-    column_count = get_column_count(table_spec) or len(json_files)
+def adapt_cell_value_to_column(value, column_number):
+    return re.sub(r"%\(n(::[^)]+\)[.0-9]*[dfs])",
+                  r"%({}\1".format(column_number),
+                  value)
 
-    # TODO Print body.
+
+def make_rows_for_column_spec_custom(spec, column_count):
+    cell_values = spec.get("cell", [])
+
+    cell_count = len(cell_values)
+    rows = []
+
+    for cell_index, cell_value in enumerate(cell_values):
+        if cell_index == 0:
+            row = escape_tex(spec.get("label", ""))
+        else:
+            row = ""
+
+        for column_number in range(1, column_count + 1):
+            value = adapt_cell_value_to_column(
+                cell_value, column_number)
+
+            row += " & {}".format(escape_tex(value))
+
+        row += " \\\\"
+
+        if cell_index == cell_count - 1:
+            row += "[1em]"
+
+        rows.append(row)
+
+    return rows
 
 
-def print_footer(table_spec, json_files):
-    column_count = get_column_count(table_spec) or len(json_files)
+def make_rows_for_column_spec_regression(spec, column_count):
+    if "coef" not in spec:
+        raise TableSpecificationError(
+            ("Column specification {} has type 'regression' but "
+             + "it has no 'coef' given.")
+            .format(spec))
+
+    coef = spec.get("coef")
+
+    cell_values = [
+        ("$%(n::coef::{0}::est).03f$"
+         + "%(n::coef::{0}::stars)s").format(coef),
+        "(%(n::coef::{0}::se).04f)".format(coef)
+    ]
+
+    custom_spec = {
+        "label": spec.get("label", ""),
+        "cell": cell_values
+    }
+
+    return make_rows_for_column_spec_custom(custom_spec, column_count)
+
+
+def make_rows_for_column_spec(spec, column_count):
+    if "type" not in spec or spec.get("type") == "custom":
+        return make_rows_for_column_spec_custom(spec, column_count)
+    elif spec.get("type") == "regression":
+        return make_rows_for_column_spec_regression(spec, column_count)
+    else:
+        raise TableSpecificationError(
+            "Column specification {} has invalid type '{}'."
+            .format(spec, spec.get("type")))
+
+
+def make_rows_for_row_spec(spec, column_count):
+    cell_values = spec.get("cell", [])
+
+    cell_count = len(cell_values)
+
+    if cell_count != column_count:
+        raise TableSpecificationError(
+            ("Row specification {} has {} cell values but the column "
+             + "count is {}.")
+            .format(spec,
+                    cell_count,
+                    column_count))
+
+    rows = [
+        r"{} & {} \\[1em]"
+        .format(escape_tex(spec.get("label", "")),
+                " & ".join(escape_tex(value) for value in cell_values))
+    ]
+
+    return rows
+
+
+def make_template(table_spec, json_filenames, title, label):
+    column_count = get_column_count(table_spec) or len(json_filenames)
+    add_table_env = title is not None or label is not None
+
+    lines = []
+
+    # Add \begin{table} etc. if a title or a label was specified on the
+    # command line.
+    #
+    if add_table_env:
+        lines.append(r"\begin{table}[!htb]")
+        lines.append(r"\begin{threeparttable}")
+        lines.append(r"\centering")
+        lines.append(r"\caption{%s}" % (title or ""))
+
+    lines.append(r"\begin{tabular}{lc{%d}}" % column_count)
+    lines.append(r"\toprule")
+
+    # Add header.
+    #
+
+    for column in nested_get(table_spec, "header", "column"):
+        lines.extend(
+            make_rows_for_column_spec(column, column_count))
+
+    for row in nested_get(table_spec, "header", "row"):
+        lines.extend(
+            make_rows_for_row_spec(row, column_count))
+
+    lines.append(r"\midrule")
+
+    # Add body.
+    #
+
+    for column in nested_get(table_spec, "body", "column"):
+        lines.extend(
+            make_rows_for_column_spec(column, column_count))
+
+    for row in nested_get(table_spec, "body", "row"):
+        lines.extend(
+            make_rows_for_row_spec(row, column_count))
+
+    # Add footer.
+    #
 
     if "footer" in table_spec:
-        print(r"\midrule")
+        lines.append(r"\midrule")
 
-        # TODO Print footer.
+        for column in nested_get(table_spec, "footer", "column"):
+            lines.extend(
+                make_rows_for_column_spec(column, column_count))
 
-    print(r"\bottomrule")
-    print(r"\end{tabular}")
+        for row in nested_get(table_spec, "footer", "row"):
+            lines.extend(
+                make_rows_for_row_spec(row, column_count))
+
+    lines.append(r"\bottomrule")
+    lines.append(r"\end{tabular}")
+
+    # Add \end{table} etc. if a title or a label was specified on the
+    # command line.
+    #
+    if add_table_env:
+        lines.append(r"\label{%s}" % (label or ""))
+        lines.append(r"\begin{tablenotes}")
+        lines.append(r"\item {\em Notes:}")
+        lines.append(r"\end{tablenotes}")
+        lines.append(r"\end{threeparttable}")
+        lines.append(r"\end{table}")
+
+    return "\n".join(lines)
 
 
 @click.command()
 @click.option("-d", "--debug", is_flag=True)
+@click.option("-T", "--only-template", is_flag=True)
+@click.option("-H", "--human-readable-numbers", is_flag=True)
+@click.option("-t", "--title", required=False, type=str)
+@click.option("-l", "--label", required=False, type=str)
 @click.option("-j", "--json-filename",
               required=True, type=str, multiple=True)
-def main(json_filename, debug=False):
+def main(json_filename, title=None, label=None, only_template=False,
+         human_readable_numbers=False, debug=False):
     if not debug:
         sys.tracebacklimit = 0
 
@@ -173,12 +357,25 @@ def main(json_filename, debug=False):
 
     confirm_consistent_column_count(table_spec, json_filename)
 
-    json_files = list(load_json_file(filename)
-                      for filename in json_filename)
+    # Generate the template first.
+    #
+    template = make_template(table_spec, json_filename, title, label)
 
-    print_header(table_spec, json_files)
-    print_body(table_spec, json_files)
-    print_footer(table_spec, json_files)
+    if only_template:
+        print(template)
+    else:
+        # Use the template to print the final table.
+        #
+
+        json_files = list(load_json_file(filename)
+                        for filename in json_filename)
+
+        result = template % make_json_dict(json_files)
+
+        if human_readable_numbers:
+            result = add_thousands_separator(result)
+
+        print(result)
 
 
 if __name__ == "__main__":
