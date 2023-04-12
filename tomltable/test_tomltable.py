@@ -68,19 +68,19 @@ class TestNestedGet(unittest.TestCase):
 
 class TestAddThousandsSeparator(unittest.TestCase):
     def test_no_change_to_fractional_part(self):
-        text = "foo 0.1234 bar"
+        text = "foo 0.12345 bar"
 
         self.assertEqual(text, m.add_thousands_separator(text))
 
     def test_no_change_to_whole_part_if_fewer_than_four_digits(self):
-        text = "foo 1.1234 10.1234 100.1234 bar"
+        text = "foo 1.12345 10.12345 100.12345 bar"
 
         self.assertEqual(text, m.add_thousands_separator(text))
 
     def test_commas_added_to_whole_part_if_at_least_four_digits(self):
-        text = "foo 1000.1234 10000.1234 100000.1234 1000000.1234 bar"
-        expected = ("foo 1,000.1234 10,000.1234 100,000.1234 "
-                    + "1,000,000.1234 bar")
+        text = "foo 1000.12345 10000.12345 100000.12345 1000000.12345 bar"
+        expected = ("foo 1,000.12345 10,000.12345 100,000.12345 "
+                    + "1,000,000.12345 bar")
 
         self.assertEqual(expected, m.add_thousands_separator(text))
 

@@ -49,7 +49,7 @@ def add_thousands_separator(string):
 
         return "{}{}".format(match.group(1), number)
 
-    return re.sub(r"(^|[^.])([0-9]+)", replace, string)
+    return re.sub(r"(^|[^.0-9])([0-9]+)", replace, string)
 
 
 def nested_get(obj, *args):
