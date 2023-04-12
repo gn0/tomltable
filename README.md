@@ -11,14 +11,14 @@ The spiritual ancestor of this package is [`coeftable`](https://github.com/gn0/c
 To install this package using pip, type either
 
 ```
-pip install git+https://codeberg.org/gnyeki/tomltable
+python3 -m pip install git+https://codeberg.org/gnyeki/tomltable
 ```
 
 or
 
 ```
 git clone https://codeberg.org/gnyeki/tomltable
-pip install ./tomltable
+python3 -m pip install ./tomltable
 ```
 
 ## Usage
