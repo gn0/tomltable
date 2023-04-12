@@ -179,6 +179,7 @@ def adapt_cell_value_to_column(value, column_number):
 
 def make_rows_for_column_spec_custom(spec, column_count):
     cell_values = spec.get("cell", [])
+    padding_bottom = spec.get("padding-bottom")
 
     cell_count = len(cell_values)
     rows = []
@@ -197,8 +198,8 @@ def make_rows_for_column_spec_custom(spec, column_count):
 
         row += " \\\\"
 
-        if cell_index == cell_count - 1:
-            row += "[1em]"
+        if cell_index == cell_count - 1 and padding_bottom is not None:
+            row += f"[{padding_bottom}]"
 
         rows.append(row)
 
@@ -216,7 +217,8 @@ def make_rows_for_column_spec_regression(spec, column_count):
 
     custom_spec = {
         "label": spec.get("label", ""),
-        "cell": cell_values
+        "cell": cell_values,
+        "padding-bottom": "1em"
     }
 
     return make_rows_for_column_spec_custom(custom_spec, column_count)
@@ -235,6 +237,7 @@ def make_rows_for_column_spec(spec, column_count):
 
 def make_rows_for_row_spec(spec, column_count):
     cell_values = spec.get("cell", [])
+    padding_bottom = spec.get("padding-bottom")
 
     cell_count = len(cell_values)
 
@@ -246,13 +249,15 @@ def make_rows_for_row_spec(spec, column_count):
                     cell_count,
                     column_count))
 
-    rows = [
-        r"{} & {} \\[1em]"
-        .format(escape_tex(spec.get("label", "")),
-                " & ".join(escape_tex(value) for value in cell_values))
-    ]
+    row = (r"{} & {} \\"
+           .format(escape_tex(spec.get("label", "")),
+                   " & ".join(escape_tex(value)
+                              for value in cell_values)))
 
-    return rows
+    if padding_bottom is not None:
+        row += f"[{padding_bottom}]"
+
+    return [row]
 
 
 def make_template(table_spec, json_filenames, title, label):
