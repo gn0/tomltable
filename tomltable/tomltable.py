@@ -336,24 +336,33 @@ def make_template(table_spec, json_filenames, title, label):
 
 @click.command()
 @click.option("-d", "--debug", is_flag=True)
+@click.option("-F", "--from-template", is_flag=True)
 @click.option("-T", "--only-template", is_flag=True)
 @click.option("-H", "--human-readable-numbers", is_flag=True)
 @click.option("-t", "--title", required=False, type=str)
 @click.option("-l", "--label", required=False, type=str)
 @click.option("-j", "--json-filename",
               required=True, type=str, multiple=True)
-def main(json_filename, title=None, label=None, only_template=False,
-         human_readable_numbers=False, debug=False):
+def main(json_filename, title=None, label=None, from_template=False,
+         only_template=False, human_readable_numbers=False,
+         debug=False):
     if not debug:
         sys.tracebacklimit = 0
 
-    table_spec = toml.loads(sys.stdin.read())
+    if from_template:
+        # Read the template from stdin.
+        #
+        template = sys.stdin.read()
+    else:
+        # Generate the template from the table specification on stdin.
+        #
 
-    confirm_consistent_column_count(table_spec, json_filename)
+        table_spec = toml.loads(sys.stdin.read())
 
-    # Generate the template first.
-    #
-    template = make_template(table_spec, json_filename, title, label)
+        confirm_consistent_column_count(table_spec, json_filename)
+
+        template = make_template(
+            table_spec, json_filename, title, label)
 
     if only_template:
         print(template)
