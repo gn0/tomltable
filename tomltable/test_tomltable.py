@@ -92,12 +92,10 @@ class TestMakeTemplate(unittest.TestCase):
 [[body.column]]
 label = "Foo"
 coef = "foo"
-type = "regression"
 
 [[body.column]]
 label = "Bar"
 coef = "bar"
-type = "regression"
 """
         )
 
@@ -106,12 +104,10 @@ type = "regression"
 [[body.column]]
 label = "Foo"
 coef = "foo"
-type = "regression"
 
 [[body.column]]
 label = "Bar"
 coef = "bar"
-type = "regression"
 
 [[footer.column]]
 label = "$N$"
@@ -124,12 +120,10 @@ cell = ["%(n::obs)d"]
 [[body.column]]
 label = "Foo"
 coef = "foo"
-type = "regression"
 
 [[body.column]]
 label = "Bar"
 coef = "bar"
-type = "regression"
 
 [[footer.row]]
 label = "unit FE"
@@ -148,12 +142,10 @@ cell = ["", "", "Sit Amet"]
 [[body.column]]
 label = "Foo"
 coef = "foo"
-type = "regression"
 
 [[body.column]]
 label = "Bar"
 coef = "bar"
-type = "regression"
 
 [[footer.column]]
 label = "$N$"
@@ -176,12 +168,10 @@ cell = ["Ipsum"]
 [[body.column]]
 label = "Foo"
 coef = "foo"
-type = "regression"
 
 [[body.column]]
 label = "Bar"
 coef = "bar"
-type = "regression"
 
 [[footer.column]]
 label = "$N$"

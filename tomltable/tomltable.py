@@ -206,12 +206,6 @@ def make_rows_for_column_spec_custom(spec, column_count):
 
 
 def make_rows_for_column_spec_regression(spec, column_count):
-    if "coef" not in spec:
-        raise TableSpecificationError(
-            ("Column specification {} has type 'regression' but "
-             + "it has no 'coef' given.")
-            .format(spec))
-
     coef = spec.get("coef")
 
     cell_values = [
@@ -229,14 +223,14 @@ def make_rows_for_column_spec_regression(spec, column_count):
 
 
 def make_rows_for_column_spec(spec, column_count):
-    if "type" not in spec or spec.get("type") == "custom":
-        return make_rows_for_column_spec_custom(spec, column_count)
-    elif spec.get("type") == "regression":
+    if "coef" in spec:
         return make_rows_for_column_spec_regression(spec, column_count)
+    elif "cell" in spec:
+        return make_rows_for_column_spec_custom(spec, column_count)
     else:
         raise TableSpecificationError(
-            "Column specification {} has invalid type '{}'."
-            .format(spec, spec.get("type")))
+            "Column specification {} gives neither 'coef' nor 'cell'."
+            .format(spec))
 
 
 def make_rows_for_row_spec(spec, column_count):
