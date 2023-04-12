@@ -66,12 +66,6 @@ def nested_get(obj, *args):
             return nested_get(obj[index], *args[1:])
         else:
             return dict()
-        # elif index < 0:
-        #     raise ValueError(f"Index {index} is invalid.")
-        # else:
-        #     raise ValueError(
-        #         "Object {} has only {} elements.  Index {} is invalid."
-        #         .format(obj, len(obj), index))
     elif type(obj) is dict:
         key = args[0]
 
