@@ -89,27 +89,27 @@ class TestMakeTemplate(unittest.TestCase):
     def setUp(self):
         self.spec_only_body = toml.loads(
             """
-[[body.column]]
+[[body.cell]]
 label = "Foo"
 coef = "foo"
 
-[[body.column]]
+[[body.cell]]
 label = "Bar"
 coef = "bar"
 """
         )
 
-        self.spec_body_and_footer_column = toml.loads(
+        self.spec_body_and_footer_cell = toml.loads(
             """
-[[body.column]]
+[[body.cell]]
 label = "Foo"
 coef = "foo"
 
-[[body.column]]
+[[body.cell]]
 label = "Bar"
 coef = "bar"
 
-[[footer.column]]
+[[footer.cell]]
 label = "$N$"
 cell = ["%(n::obs)d"]
 """
@@ -117,11 +117,11 @@ cell = ["%(n::obs)d"]
 
         self.spec_body_and_footer_row = toml.loads(
             """
-[[body.column]]
+[[body.cell]]
 label = "Foo"
 coef = "foo"
 
-[[body.column]]
+[[body.cell]]
 label = "Bar"
 coef = "bar"
 
@@ -139,15 +139,15 @@ cell = ["Lorem", "Ipsum", "Dolor"]
 [[header.row]]
 cell = ["", "", "Sit Amet"]
 
-[[body.column]]
+[[body.cell]]
 label = "Foo"
 coef = "foo"
 
-[[body.column]]
+[[body.cell]]
 label = "Bar"
 coef = "bar"
 
-[[footer.column]]
+[[footer.cell]]
 label = "$N$"
 cell = ["%(n::obs)d"]
 
@@ -160,26 +160,26 @@ cell = ["", "YES", "YES"]
         self.spec_full_with_single_column = toml.loads(
             """
 [[header.row]]
-cell = ["Lorem"]
+cell = "Lorem"
 
 [[header.row]]
-cell = ["Ipsum"]
+cell = "Ipsum"
 
-[[body.column]]
+[[body.cell]]
 label = "Foo"
 coef = "foo"
 
-[[body.column]]
+[[body.cell]]
 label = "Bar"
 coef = "bar"
 
-[[footer.column]]
+[[footer.cell]]
 label = "$N$"
-cell = ["%(n::obs)d"]
+cell = "%(n::obs)d"
 
 [[footer.row]]
 label = "unit FE"
-cell = ["YES"]
+cell = "YES"
 """
         )
 
@@ -227,7 +227,7 @@ cell = ["YES"]
                     label=None)))
 
         for spec in (self.spec_only_body,
-                     self.spec_body_and_footer_column):
+                     self.spec_body_and_footer_cell):
             self.assertEqual(
                 4,
                 get_column_count(
@@ -288,7 +288,7 @@ cell = ["YES"]
 
         for (spec, json_filenames) in (
                 (self.spec_only_body, ["a", "b", "c"]),
-                (self.spec_body_and_footer_column, ["a", "b", "c"]),
+                (self.spec_body_and_footer_cell, ["a", "b", "c"]),
                 (self.spec_body_and_footer_row, ["a", "b", "c"]),
                 (self.spec_full, ["a", "b", "c"]),
                 (self.spec_full_with_single_column, ["a"])):

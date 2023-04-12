@@ -156,8 +156,14 @@ def confirm_consistent_column_count(table_spec, json_filenames):
 
 def get_column_count(table_spec):
     for section in ("header", "body", "footer"):
-        column_count = len(
-            nested_get(table_spec, section, "row", 0, "cell"))
+        cell_values = nested_get(table_spec, section, "row", 0, "cell")
+
+        if cell_values == dict():
+            column_count = 0
+        elif type(cell_values) is list:
+            column_count = len(cell_values)
+        else:
+            column_count = 1
 
         if column_count > 0:
             return column_count
@@ -177,9 +183,15 @@ def adapt_cell_value_to_column(value, column_number):
                   value)
 
 
-def make_rows_for_column_spec_custom(spec, column_count):
+def make_rows_for_cell_spec_custom(spec, column_count):
     cell_values = spec.get("cell", [])
     padding_bottom = spec.get("padding-bottom")
+
+    # Allow singleton 'cell' fields to be specified without square
+    # brackets around the cell value.
+    #
+    if type(cell_values) is not list:
+        cell_values = [cell_values]
 
     cell_count = len(cell_values)
     rows = []
@@ -206,7 +218,7 @@ def make_rows_for_column_spec_custom(spec, column_count):
     return rows
 
 
-def make_rows_for_column_spec_regression(spec, column_count):
+def make_rows_for_cell_spec_regression(spec, column_count):
     coef = spec.get("coef")
 
     cell_values = [
@@ -221,23 +233,29 @@ def make_rows_for_column_spec_regression(spec, column_count):
         "padding-bottom": "1em"
     }
 
-    return make_rows_for_column_spec_custom(custom_spec, column_count)
+    return make_rows_for_cell_spec_custom(custom_spec, column_count)
 
 
-def make_rows_for_column_spec(spec, column_count):
+def make_rows_for_cell_spec(spec, column_count):
     if "coef" in spec:
-        return make_rows_for_column_spec_regression(spec, column_count)
+        return make_rows_for_cell_spec_regression(spec, column_count)
     elif "cell" in spec:
-        return make_rows_for_column_spec_custom(spec, column_count)
+        return make_rows_for_cell_spec_custom(spec, column_count)
     else:
         raise TableSpecificationError(
-            "Column specification {} gives neither 'coef' nor 'cell'."
+            "Cell specification {} gives neither 'coef' nor 'cell'."
             .format(spec))
 
 
 def make_rows_for_row_spec(spec, column_count):
     cell_values = spec.get("cell", [])
     padding_bottom = spec.get("padding-bottom")
+
+    # Allow singleton 'cell' fields to be specified without square
+    # brackets around the cell value.
+    #
+    if type(cell_values) is not list:
+        cell_values = [cell_values]
 
     cell_count = len(cell_values)
 
@@ -281,9 +299,9 @@ def make_template(table_spec, json_filenames, title, label):
     # Add header.
     #
 
-    for column in nested_get(table_spec, "header", "column"):
+    for cell in nested_get(table_spec, "header", "cell"):
         lines.extend(
-            make_rows_for_column_spec(column, column_count))
+            make_rows_for_cell_spec(cell, column_count))
 
     for row in nested_get(table_spec, "header", "row"):
         lines.extend(
@@ -294,9 +312,9 @@ def make_template(table_spec, json_filenames, title, label):
     # Add body.
     #
 
-    for column in nested_get(table_spec, "body", "column"):
+    for cell in nested_get(table_spec, "body", "cell"):
         lines.extend(
-            make_rows_for_column_spec(column, column_count))
+            make_rows_for_cell_spec(cell, column_count))
 
     for row in nested_get(table_spec, "body", "row"):
         lines.extend(
@@ -308,9 +326,9 @@ def make_template(table_spec, json_filenames, title, label):
     if "footer" in table_spec:
         lines.append(r"\midrule")
 
-        for column in nested_get(table_spec, "footer", "column"):
+        for cell in nested_get(table_spec, "footer", "cell"):
             lines.extend(
-                make_rows_for_column_spec(column, column_count))
+                make_rows_for_cell_spec(cell, column_count))
 
         for row in nested_get(table_spec, "footer", "row"):
             lines.extend(
