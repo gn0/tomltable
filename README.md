@@ -9,7 +9,7 @@ However, its specification language also provides a convenience shortcut for reg
 There are two related packages that save regression results in a structure that is compatible with `tomltable`:
 
 1. [`jsonwriter`](https://codeberg.org/gnyeki/jsonwriter) for R and
-2. [`json_this`](https://github.com/gn0/json-thus) for Stata.
+2. [`json_this`](https://github.com/gn0/json-this) for Stata.
 
 The spiritual ancestor of this package is [`coeftable`](https://github.com/gn0/coeftable) which performed a similar task but without the TOML-based specification language.
 
