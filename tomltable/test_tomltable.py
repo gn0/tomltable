@@ -165,6 +165,34 @@ cell = ["", "YES", "YES"]
 """
         )
 
+        self.spec_full_with_single_column = toml.loads(
+            """
+[[header.row]]
+cell = ["Lorem"]
+
+[[header.row]]
+cell = ["Ipsum"]
+
+[[body.column]]
+label = "Foo"
+coef = "foo"
+type = "regression"
+
+[[body.column]]
+label = "Bar"
+coef = "bar"
+type = "regression"
+
+[[footer.column]]
+label = "$N$"
+cell = ["%(n::obs)d"]
+
+[[footer.row]]
+label = "unit FE"
+cell = ["YES"]
+"""
+        )
+
     def test_only_tabular_if_no_title_and_no_label(self):
         result = m.make_template(
             table_spec=dict(),
@@ -198,6 +226,15 @@ cell = ["", "YES", "YES"]
             self.assertIsNotNone(match)
 
             return int(match.group(1))
+
+        self.assertEqual(
+            1,
+            get_column_count(
+                m.make_template(
+                    table_spec=self.spec_full_with_single_column,
+                    json_filenames=["a"],
+                    title=None,
+                    label=None)))
 
         for spec in (self.spec_only_body,
                      self.spec_body_and_footer_column):
@@ -259,13 +296,15 @@ cell = ["", "YES", "YES"]
 
             return counts
 
-        for spec in (self.spec_only_body,
-                     self.spec_body_and_footer_column,
-                     self.spec_body_and_footer_row,
-                     self.spec_full):
+        for (spec, json_filenames) in (
+                (self.spec_only_body, ["a", "b", "c"]),
+                (self.spec_body_and_footer_column, ["a", "b", "c"]),
+                (self.spec_body_and_footer_row, ["a", "b", "c"]),
+                (self.spec_full, ["a", "b", "c"]),
+                (self.spec_full_with_single_column, ["a"])):
             template = m.make_template(
                 table_spec=spec,
-                json_filenames=["a", "b", "c"],
+                json_filenames=json_filenames,
                 title=None,
                 label=None)
 
