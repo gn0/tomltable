@@ -119,10 +119,10 @@ def confirm_consistent_column_count(table_spec, json_filenames):
             if count_a != count_b:
                 raise TableSpecificationError(
                     ("Inconsistent column counts: "
-                     + "{} has {} {} but {} has {}.")
+                     + "{} has {} column{} but {} has {}.")
                     .format(section_a,
                             count_a,
-                            "columns" if count_a > 1 else "column",
+                            "s" if count_a > 1 else "",
                             section_b,
                             count_b))
 
