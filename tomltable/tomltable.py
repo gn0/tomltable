@@ -334,15 +334,32 @@ def make_template(table_spec, json_filenames, title, label):
     return "\n".join(lines)
 
 
-@click.command()
-@click.option("-d", "--debug", is_flag=True)
-@click.option("-F", "--from-template", is_flag=True)
-@click.option("-T", "--only-template", is_flag=True)
-@click.option("-H", "--human-readable-numbers", is_flag=True)
-@click.option("-t", "--title", required=False, type=str)
-@click.option("-l", "--label", required=False, type=str)
+@click.command(help=("Generate a LaTeX table from a TOML formatted "
+                     + "table specification (read from stdin) and "
+                     + "a set of JSON files (specified as arguments)."))
 @click.option("-j", "--json-filename",
-              required=True, type=str, multiple=True)
+              required=True, type=str, multiple=True,
+              help=("JSON file to use as input to the table. "
+                    + "In a regression table, each JSON file would "
+                    + "most likely correspond to a separate column."))
+@click.option("-t", "--title", required=False, type=str,
+              help=(r"Add title with the \caption{} command. "
+                    + "Implies use of the table and threeparttable "
+                    + "environments."))
+@click.option("-l", "--label", required=False, type=str,
+              help=(r"Add label with the \label{} command. "
+                    + "Implies use of the table and threeparttable "
+                    + "environments."))
+@click.option("-F", "--from-template", is_flag=True,
+              help=("Treat stdin as a template instead of a table "
+                    + "specification."))
+@click.option("-T", "--only-template", is_flag=True,
+              help=("Print template instead of the final table to "
+                    + "stdout."))
+@click.option("-H", "--human-readable-numbers", is_flag=True,
+              help=("Add commas as thousands separators to numbers in "
+                    + "the final table."))
+@click.option("-d", "--debug", is_flag=True)
 def main(json_filename, title=None, label=None, from_template=False,
          only_template=False, human_readable_numbers=False,
          debug=False):
