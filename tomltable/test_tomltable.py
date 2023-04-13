@@ -185,6 +185,17 @@ cell = "YES"
 """
         )
 
+    def test_every_test_spec_is_valid(self):
+        for attribute, value in vars(self).items():
+            if not attribute.startswith("spec_"):
+                continue
+
+            try:
+                m.confirm_valid_specification(value)
+            except:
+                self.fail("confirm_valid_specification fails for {}."
+                          .format(attribute))
+
     def test_only_tabular_if_no_title_and_no_label(self):
         result = m.make_template(
             table_spec=dict(),
