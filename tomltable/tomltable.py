@@ -153,15 +153,29 @@ def confirm_valid_specification(table_spec):
                             ("Value for field '{}' should be a string "
                             + "but it has type '{}' instead.")
                             .format(third_key, type(value).__name__))
-                    elif (third_key == "cell"
-                        and type(value) is not str
-                        and (type(value) is not list
-                            or any(type(x) is not str for x in value))):
-                        raise TableSpecificationError(
-                            ("Value for field 'cell' should be a "
-                            + "string or a list of strings but it has "
-                            + "type '{}' instead.")
-                            .format(type(value).__name__))
+                    elif third_key == "cell" and type(value) is not str:
+                        if type(value) is not list:
+                            raise TableSpecificationError(
+                                ("Value for field 'cell' should be a "
+                                 + "string or a list of strings but it "
+                                 + "has type '{}' instead.")
+                                .format(type(value).__name__))
+                        elif len(value) == 0:
+                            raise TableSpecificationError(
+                                "Value for field 'cell' should be a "
+                                + "string or a list of strings but it "
+                                + "is an empty list instead.")
+                        elif type(value[0]) is not str:
+                            # NOTE It is enough to check the type of the
+                            # first element.  `toml.loads` enforces
+                            # homogeneity within the list.
+                            #
+                            raise TableSpecificationError(
+                                ("Value for field 'cell' should be a "
+                                 + "string or a list of strings but it "
+                                 + "is a list of values of type '{}' "
+                                 + "instead.")
+                                .format(type(value[0]).__name__))
                     elif (third_key == "padding-bottom"
                         and (type(value) is not str
                             or re.match(
