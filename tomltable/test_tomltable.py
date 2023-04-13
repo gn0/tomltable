@@ -1,6 +1,8 @@
 import unittest
 import toml
 import re
+import io
+import contextlib
 
 from tomltable import tomltable as m
 
@@ -302,4 +304,90 @@ cell = "YES"
             cell_counts = get_cell_counts(template)
 
             self.assertTrue(all(x == column_count for x in cell_counts))
+
+
+class TestFillTemplate(unittest.TestCase):
+    def setUp(self):
+        self.json_dict = {
+            "foo": "bar",
+            "bar::baz": 3.14,
+            "baz": None,
+        }
+
+    def test_no_change_without_conversion_specifiers(self):
+        template = "lorem ipsum dolor sit amet consectetuer"
+
+        self.assertEqual(
+            template, m.fill_template(template, self.json_dict))
+
+    def test_string_conversion_specifiers(self):
+        template = "lorem %(foo)s dolor %(bar::baz)s amet %(baz)s"
+
+        self.assertEqual(
+            "lorem bar dolor 3.14 amet None",
+            m.fill_template(template, self.json_dict))
+
+    def test_integer_conversion_specifiers(self):
+        template = "lorem %(foo)d dolor %(bar::baz)d amet %(baz)d"
+        output = io.StringIO()
+
+        with contextlib.redirect_stderr(output):
+            result = m.fill_template(template, self.json_dict)
+
+        # Inserts empty string on TypeError.
+        #
+        self.assertEqual("lorem  dolor 3 amet ", result)
+
+        # Prints warning for each conversion error.
+        #
+        self.assertEqual(
+            2,
+            len(re.findall("^warning: ",
+                           output.getvalue(),
+                           flags=re.MULTILINE)))
+
+    def test_float_conversion_specifiers(self):
+        template = "lorem %(foo)f dolor %(bar::baz)f amet %(baz)f"
+        output = io.StringIO()
+
+        with contextlib.redirect_stderr(output):
+            result = m.fill_template(template, self.json_dict)
+
+        # Inserts empty string on TypeError.
+        #
+        self.assertEqual("lorem  dolor 3.140000 amet ", result)
+
+        # Prints warning for each conversion error.
+        #
+        self.assertEqual(
+            2,
+            len(re.findall("^warning: ",
+                           output.getvalue(),
+                           flags=re.MULTILINE)))
+
+    def test_float_conversion_specifiers_with_flags(self):
+        template = ("lorem %(foo).03f dolor %(bar::baz).03f amet "
+                    + "%(baz).03f")
+        output = io.StringIO()
+
+        with contextlib.redirect_stderr(output):
+            result = m.fill_template(template, self.json_dict)
+
+        # Inserts empty string on TypeError.
+        #
+        self.assertEqual("lorem  dolor 3.140 amet ", result)
+
+        # Prints warning for each conversion error.
+        #
+        self.assertEqual(
+            2,
+            len(re.findall("^warning: ",
+                           output.getvalue(),
+                           flags=re.MULTILINE)))
+
+    def test_raises_exception_for_missing_key(self):
+        template = "lorem %(ipsum)s dolor sit amet"
+
+        with self.assertRaises(ValueError) as context:
+            m.fill_template(template, self.json_dict)
 

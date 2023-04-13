@@ -351,6 +351,31 @@ def make_template(table_spec, json_filenames, title, label):
     return "\n".join(lines)
 
 
+def fill_template(template, json_dict):
+    def replace(match):
+        specifier = match.group(0)[len(match.group(1)):]
+        key = match.group(2)
+
+        if key not in json_dict:
+            raise ValueError(
+                ("Specifier '{}' refers to key '{}' but this key is "
+                 + "not in the JSON object.")
+                .format(specifier, key))
+
+        try:
+            replacement = specifier % json_dict
+        except TypeError:
+            print("warning: '{}' has the wrong type for specifier '{}'."
+                  .format(json_dict[key], specifier),
+                  file=sys.stderr)
+            return match.group(1)
+
+        return match.group(1) + replacement
+
+    return re.sub(
+        r"(^|[^%])%\(([^)]+)\)[-# .0-9]*[dfs]", replace, template)
+
+
 @click.command(help=("Generate a LaTeX table from a TOML formatted "
                      + "table specification (read from stdin) and "
                      + "a set of JSON files (specified as arguments)."))
@@ -407,7 +432,7 @@ def main(json_filename, title=None, label=None, from_template=False,
         json_files = list(load_json_file(filename)
                         for filename in json_filename)
 
-        result = template % make_json_dict(json_files)
+        result = fill_template(template, make_json_dict(json_files))
 
         if human_readable_numbers:
             result = add_thousands_separator(result)
