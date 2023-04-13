@@ -320,6 +320,12 @@ class TestFillTemplate(unittest.TestCase):
         self.assertEqual(
             template, m.fill_template(template, self.json_dict))
 
+    def test_no_change_with_escaped_conversion_specifier(self):
+        template = "lorem %%(foo)s dolor %%(sit)s amet consectetuer"
+
+        self.assertEqual(
+            template, m.fill_template(template, self.json_dict))
+
     def test_string_conversion_specifiers(self):
         template = "lorem %(foo)s dolor %(bar::baz)s amet %(baz)s"
 
