@@ -327,7 +327,7 @@ def make_rows_for_cell_spec_regression(spec, column_count):
     custom_spec = {
         "label": spec.get("label", ""),
         "cell": cell_values,
-        "padding-bottom": "1em"
+        "padding-bottom": spec.get("padding-bottom", "1em")
     }
 
     return make_rows_for_cell_spec_custom(custom_spec, column_count)
