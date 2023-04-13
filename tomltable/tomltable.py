@@ -134,7 +134,7 @@ def confirm_valid_specification(table_spec):
                                               "padding-bottom")):
                         raise TableSpecificationError(
                             ("Field '{}' for '{}.{}' is not 'label', "
-                            + "'cell', 'coef', or 'padding-bottom'.")
+                             + "'cell', 'coef', or 'padding-bottom'.")
                             .format(third_key, key, second_key))
                     elif (second_key == "row"
                           and third_key not in ("label",
@@ -142,7 +142,7 @@ def confirm_valid_specification(table_spec):
                                                 "padding-bottom")):
                         raise TableSpecificationError(
                             ("Field '{}' for '{}.{}' is not 'label', "
-                            + "'cell', or 'padding-bottom'.")
+                             + "'cell', or 'padding-bottom'.")
                             .format(third_key, key, second_key))
 
                     # Value types for third-level keys.
@@ -151,7 +151,7 @@ def confirm_valid_specification(table_spec):
                         and type(value) is not str):
                         raise TableSpecificationError(
                             ("Value for field '{}' should be a string "
-                            + "but it has type '{}' instead.")
+                             + "but it has type '{}' instead.")
                             .format(third_key, type(value).__name__))
                     elif third_key == "cell" and type(value) is not str:
                         if type(value) is not list:
@@ -183,8 +183,8 @@ def confirm_valid_specification(table_spec):
                                 value) is None)):
                         raise TableSpecificationError(
                             ("Value for field 'padding-bottom' should "
-                            + "be a string with a valid TeX length "
-                            + "specification but it is '{}' instead.")
+                             + "be a string with a valid TeX length "
+                             + "specification but it is '{}' instead.")
                             .format(value))
 
 
