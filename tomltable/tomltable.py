@@ -77,6 +77,103 @@ def nested_get(obj, *args):
         raise ValueError(f"Object {obj} is not a list or a dict.")
 
 
+def confirm_valid_specification(table_spec):
+    # A valid specification has to have the following characteristics:
+    #
+    # 1. Top-level keys must be "header", "body", or "footer".
+    # 2. Second-level keys must be "cell" or "row".
+    # 3. If the second-level key is "cell", then the third-level keys
+    #    must be "label", "cell", "coef", or "padding-bottom".
+    # 4. If the second-level key is "row", then the third-level keys
+    #    must be "label", "cell", or "padding-bottom".
+    # 5. The value for a third-level key "label" must be string.
+    # 6. The value for a third-level key "cell" must be string or a list
+    #    of strings.
+    # 7. The value for a third-level key "coef" must be string.
+    # 8. The value for a third-level key "padding-bottom" must be
+    #    string and it must match the pattern
+    #
+    #      `^\d+(pt|mm|cm|in|ex|em|mu|sp)$`.
+    #
+
+    for key in table_spec:
+        # Top-level keys.
+        #
+        if key not in ("header", "body", "footer"):
+            raise TableSpecificationError(
+                ("Top-level key '{}' is not 'header', 'body', or "
+                 + "'footer'.")
+                .format(key))
+        elif type(table_spec[key]) is not dict:
+            raise TableSpecificationError(
+                "Value for top-level key '{}' is not a dictionary."
+                .format(key))
+
+        # Second-level keys.
+        #
+        for second_key in table_spec[key]:
+            if second_key not in ("cell", "row"):
+                raise TableSpecificationError(
+                    "Second-level key '{}' is not 'cell' or 'row'."
+                    .format(second_key))
+            elif (type(table_spec[key][second_key]) is not list
+                  or any(type(x) is not dict
+                         for x in table_spec[key][second_key])):
+                raise TableSpecificationError(
+                    "Value for '{}.{}' is not a list of dictionaries."
+                    .format(key, second_key))
+
+            # Third-level keys.
+            #
+            for block in table_spec[key][second_key]:
+                for third_key, value in block.items():
+                    if (second_key == "cell"
+                        and third_key not in ("label",
+                                              "cell",
+                                              "coef",
+                                              "padding-bottom")):
+                        raise TableSpecificationError(
+                            ("Field '{}' for '{}.{}' is not 'label', "
+                            + "'cell', 'coef', or 'padding-bottom'.")
+                            .format(third_key, key, second_key))
+                    elif (second_key == "row"
+                          and third_key not in ("label",
+                                                "cell",
+                                                "padding-bottom")):
+                        raise TableSpecificationError(
+                            ("Field '{}' for '{}.{}' is not 'label', "
+                            + "'cell', or 'padding-bottom'.")
+                            .format(third_key, key, second_key))
+
+                    # Value types for third-level keys.
+                    #
+                    if (third_key in ("label", "coef")
+                        and type(value) is not str):
+                        raise TableSpecificationError(
+                            ("Value for field '{}' should be a string "
+                            + "but it has type '{}' instead.")
+                            .format(third_key, type(value).__name__))
+                    elif (third_key == "cell"
+                        and type(value) is not str
+                        and (type(value) is not list
+                            or any(type(x) is not str for x in value))):
+                        raise TableSpecificationError(
+                            ("Value for field 'cell' should be a "
+                            + "string or a list of strings but it has "
+                            + "type '{}' instead.")
+                            .format(type(value).__name__))
+                    elif (third_key == "padding-bottom"
+                        and (type(value) is not str
+                            or re.match(
+                                r"^\d+(pt|mm|cm|in|ex|em|mu|sp)$",
+                                value) is None)):
+                        raise TableSpecificationError(
+                            ("Value for field 'padding-bottom' should "
+                            + "be a string with a valid TeX length "
+                            + "specification but it is '{}' instead.")
+                            .format(value))
+
+
 def confirm_consistent_column_count(table_spec, json_filenames):
     sections = ("header", "body", "footer")
 
@@ -418,6 +515,7 @@ def main(json_filename, title=None, label=None, from_template=False,
 
         table_spec = toml.loads(sys.stdin.read())
 
+        confirm_valid_specification(table_spec)
         confirm_consistent_column_count(table_spec, json_filename)
 
         template = make_template(
