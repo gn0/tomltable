@@ -1,8 +1,8 @@
 import unittest
-import toml
 import re
 import io
 import contextlib
+import toml
 
 from tomltable import tomltable as m
 
@@ -405,6 +405,5 @@ class TestFillTemplate(unittest.TestCase):
     def test_raises_exception_for_missing_key(self):
         template = "lorem %(ipsum)s dolor sit amet"
 
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(ValueError) as _:
             m.fill_template(template, self.json_dict)
-

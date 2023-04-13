@@ -1,8 +1,8 @@
-import click
-import toml
 import json
 import sys
 import re
+import click
+import toml
 
 
 class TableSpecificationError(ValueError):
@@ -542,7 +542,7 @@ def main(json_filename, title=None, label=None, from_template=False,
         #
 
         json_files = list(load_json_file(filename)
-                        for filename in json_filename)
+                          for filename in json_filename)
 
         result = fill_template(template, make_json_dict(json_files))
 
