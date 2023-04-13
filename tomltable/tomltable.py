@@ -10,8 +10,8 @@ class TableSpecificationError(ValueError):
 
 
 def load_json_file(filename):
-    with open(filename, "r") as f:
-        return json.load(f)
+    with open(filename, "r") as json_file:
+        return json.load(json_file)
 
 
 def traverse(obj):
@@ -19,16 +19,16 @@ def traverse(obj):
         for key, obj2 in obj.items():
             for subpath, value in traverse(obj2):
                 if subpath is None:
-                    yield "%s" % key, value
+                    yield f"{key}", value
                 else:
-                    yield "%s::%s" % (key, subpath), value
+                    yield f"{key}::{subpath}", value
     elif type(obj) is list:
         for i, obj2 in enumerate(obj, 1):
             for subpath, value in traverse(obj2):
                 if subpath is None:
-                    yield "%d" % i, value
+                    yield f"{i}", value
                 else:
-                    yield "%d::%s" % (i, subpath), value
+                    yield f"{i}::{subpath}", value
     else:
         yield None, obj
 
@@ -55,26 +55,28 @@ def add_thousands_separator(string):
 def nested_get(obj, *args):
     if len(args) == 0:
         return obj
-    elif type(obj) is list:
+
+    if type(obj) is list:
         index = args[0]
 
         if type(index) is not int:
             raise ValueError(
-                "Non-numeric index '{}' for object {}."
-                .format(index, obj))
-        elif 0 <= index < len(obj):
+                f"Non-numeric index '{index}' for object {obj}.")
+
+        if 0 <= index < len(obj):
             return nested_get(obj[index], *args[1:])
-        else:
-            return dict()
-    elif type(obj) is dict:
+
+        return dict()
+
+    if type(obj) is dict:
         key = args[0]
 
         if key in obj:
             return nested_get(obj[key], *args[1:])
-        else:
-            return dict()
-    else:
-        raise ValueError(f"Object {obj} is not a list or a dict.")
+
+        return dict()
+
+    raise ValueError(f"Object {obj} is not a list or a dict.")
 
 
 def confirm_valid_specification(table_spec):
@@ -99,29 +101,31 @@ def confirm_valid_specification(table_spec):
     for key in table_spec:
         # Top-level keys.
         #
+
         if key not in ("header", "body", "footer"):
             raise TableSpecificationError(
                 ("Top-level key '{}' is not 'header', 'body', or "
                  + "'footer'.")
                 .format(key))
-        elif type(table_spec[key]) is not dict:
+
+        if type(table_spec[key]) is not dict:
             raise TableSpecificationError(
-                "Value for top-level key '{}' is not a dictionary."
-                .format(key))
+                f"Value for top-level key '{key}' is not a dictionary.")
 
         # Second-level keys.
         #
         for second_key in table_spec[key]:
             if second_key not in ("cell", "row"):
                 raise TableSpecificationError(
-                    "Second-level key '{}' is not 'cell' or 'row'."
-                    .format(second_key))
-            elif (type(table_spec[key][second_key]) is not list
-                  or any(type(x) is not dict
-                         for x in table_spec[key][second_key])):
+                    f"Second-level key '{second_key}' is not 'cell' "
+                    + "or 'row'.")
+
+            if (type(table_spec[key][second_key]) is not list
+                or any(type(x) is not dict
+                       for x in table_spec[key][second_key])):
                 raise TableSpecificationError(
-                    "Value for '{}.{}' is not a list of dictionaries."
-                    .format(key, second_key))
+                    f"Value for '{key}.{second_key}' is not a list "
+                    + "of dictionaries.")
 
             # Third-level keys.
             #
@@ -136,10 +140,11 @@ def confirm_valid_specification(table_spec):
                             ("Field '{}' for '{}.{}' is not 'label', "
                              + "'cell', 'coef', or 'padding-bottom'.")
                             .format(third_key, key, second_key))
-                    elif (second_key == "row"
-                          and third_key not in ("label",
-                                                "cell",
-                                                "padding-bottom")):
+
+                    if (second_key == "row"
+                        and third_key not in ("label",
+                                              "cell",
+                                              "padding-bottom")):
                         raise TableSpecificationError(
                             ("Field '{}' for '{}.{}' is not 'label', "
                              + "'cell', or 'padding-bottom'.")
@@ -147,25 +152,29 @@ def confirm_valid_specification(table_spec):
 
                     # Value types for third-level keys.
                     #
+
                     if (third_key in ("label", "coef")
                         and type(value) is not str):
                         raise TableSpecificationError(
                             ("Value for field '{}' should be a string "
                              + "but it has type '{}' instead.")
                             .format(third_key, type(value).__name__))
-                    elif third_key == "cell" and type(value) is not str:
+
+                    if third_key == "cell" and type(value) is not str:
                         if type(value) is not list:
                             raise TableSpecificationError(
                                 ("Value for field 'cell' should be a "
                                  + "string or a list of strings but it "
                                  + "has type '{}' instead.")
                                 .format(type(value).__name__))
-                        elif len(value) == 0:
+
+                        if len(value) == 0:
                             raise TableSpecificationError(
                                 "Value for field 'cell' should be a "
                                 + "string or a list of strings but it "
                                 + "is an empty list instead.")
-                        elif type(value[0]) is not str:
+
+                        if type(value[0]) is not str:
                             # NOTE It is enough to check the type of the
                             # first element.  `toml.loads` enforces
                             # homogeneity within the list.
@@ -176,11 +185,12 @@ def confirm_valid_specification(table_spec):
                                  + "is a list of values of type '{}' "
                                  + "instead.")
                                 .format(type(value[0]).__name__))
-                    elif (third_key == "padding-bottom"
+
+                    if (third_key == "padding-bottom"
                         and (type(value) is not str
-                            or re.match(
-                                r"^\d+(pt|mm|cm|in|ex|em|mu|sp)$",
-                                value) is None)):
+                             or re.match(
+                                 r"^\d+(pt|mm|cm|in|ex|em|mu|sp)$",
+                                 value) is None)):
                         raise TableSpecificationError(
                             ("Value for field 'padding-bottom' should "
                              + "be a string with a valid TeX length "
@@ -202,9 +212,8 @@ def confirm_consistent_column_count(table_spec, json_filenames):
             and not all(value == counts_in_section[0]
                         for value in counts_in_section)):
             raise TableSpecificationError(
-                "Inconsistent column counts in the {}: {}."
-                .format(section,
-                        counts_in_section))
+                f"Inconsistent column counts in the {section}: "
+                + f"{counts_in_section}.")
 
         return counts_in_section
 
@@ -290,7 +299,7 @@ def escape_tex(value):
 
 def adapt_cell_value_to_column(value, column_number):
     return re.sub(r"%\(n(::[^)]+\)[.0-9]*[dfs])",
-                  r"%({}\1".format(column_number),
+                  fr"%({column_number}\1",
                   value)
 
 
@@ -333,9 +342,9 @@ def make_rows_for_cell_spec_regression(spec, column_count):
     coef = spec.get("coef")
 
     cell_values = [
-        ("$%(n::coef::{0}::est).03f$"
-         + "%(n::coef::{0}::stars)s").format(coef),
-        "(%(n::coef::{0}::se).04f)".format(coef)
+        (f"$%(n::coef::{coef}::est).03f$"
+         + f"%(n::coef::{coef}::stars)s"),
+        f"(%(n::coef::{coef}::se).04f)"
     ]
 
     custom_spec = {
@@ -350,12 +359,12 @@ def make_rows_for_cell_spec_regression(spec, column_count):
 def make_rows_for_cell_spec(spec, column_count):
     if "coef" in spec:
         return make_rows_for_cell_spec_regression(spec, column_count)
-    elif "cell" in spec:
+
+    if "cell" in spec:
         return make_rows_for_cell_spec_custom(spec, column_count)
-    else:
-        raise TableSpecificationError(
-            "Cell specification {} gives neither 'coef' nor 'cell'."
-            .format(spec))
+
+    raise TableSpecificationError(
+        f"Cell specification {spec} gives neither 'coef' nor 'cell'.")
 
 
 def make_rows_for_row_spec(spec, column_count):
@@ -469,9 +478,8 @@ def fill_template(template, json_dict):
 
         if key not in json_dict:
             raise ValueError(
-                ("Specifier '{}' refers to key '{}' but this key is "
-                 + "not in the JSON object.")
-                .format(specifier, key))
+                f"Specifier '{specifier}' refers to key '{key}' but "
+                + "this key is not in the JSON object.")
 
         try:
             replacement = specifier % json_dict
