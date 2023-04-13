@@ -409,6 +409,11 @@ def make_template(table_spec, json_filenames, title, label):
     #
     if add_table_env:
         lines.append(r"\begin{table}[!htb]")
+        lines.append(
+            r"\begin{adjustbox}{"
+            + r"max width=\textwidth, "
+            + r"max height=\textheight, "
+            + "center}")
         lines.append(r"\begin{threeparttable}")
         lines.append(r"\centering")
         lines.append(r"\caption{%s}" % (title or ""))
@@ -466,6 +471,7 @@ def make_template(table_spec, json_filenames, title, label):
         lines.append(r"\item {\em Notes:}")
         lines.append(r"\end{tablenotes}")
         lines.append(r"\end{threeparttable}")
+        lines.append(r"\end{adjustbox}")
         lines.append(r"\end{table}")
 
     return "\n".join(lines)
