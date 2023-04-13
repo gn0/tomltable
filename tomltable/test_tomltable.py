@@ -224,11 +224,11 @@ cell = "YES"
 
     def test_column_count_matches_table_spec(self):
         def get_column_count(template):
-            match = re.search(r"\\begin{tabular}{lc{(\d+)}}", template)
+            match = re.search(r"\\begin{tabular}{l(c+)}", template)
 
             self.assertIsNotNone(match)
 
-            return int(match.group(1))
+            return len(match.group(1))
 
         self.assertEqual(
             1,
@@ -274,11 +274,11 @@ cell = "YES"
 
     def test_every_row_has_as_many_cells_as_there_are_columns(self):
         def get_column_count(template):
-            match = re.search(r"\\begin{tabular}{lc{(\d+)}}", template)
+            match = re.search(r"\\begin{tabular}{l(c+)}", template)
 
             self.assertIsNotNone(match)
 
-            return int(match.group(1))
+            return len(match.group(1))
 
         def get_cell_counts(template):
             counts = []

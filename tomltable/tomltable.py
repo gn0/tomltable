@@ -413,7 +413,7 @@ def make_template(table_spec, json_filenames, title, label):
         lines.append(r"\centering")
         lines.append(r"\caption{%s}" % (title or ""))
 
-    lines.append(r"\begin{tabular}{lc{%d}}" % column_count)
+    lines.append(r"\begin{tabular}{l%s}" % ("c" * column_count))
     lines.append(r"\toprule")
 
     # Add header.
