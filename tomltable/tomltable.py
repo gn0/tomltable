@@ -93,9 +93,7 @@ def confirm_valid_specification(table_spec):
     #    of strings.
     # 7. The value for a third-level key "coef" must be string.
     # 8. The value for a third-level key "padding-bottom" must be
-    #    string and it must match the pattern
-    #
-    #      `^\d+(pt|mm|cm|in|ex|em|mu|sp)$`.
+    #    string containing a valid TeX length specification.
     #
 
     for key in table_spec:
@@ -189,7 +187,8 @@ def confirm_valid_specification(table_spec):
                     if (third_key == "padding-bottom"
                         and (type(value) is not str
                              or re.match(
-                                 r"^\d+(pt|mm|cm|in|ex|em|mu|sp)$",
+                                 ("^(-?[0-9]*[.])?[0-9]+"
+                                  + "(pt|mm|cm|in|ex|em|mu|sp)$"),
                                  value) is None)):
                         raise TableSpecificationError(
                             ("Value for field 'padding-bottom' should "

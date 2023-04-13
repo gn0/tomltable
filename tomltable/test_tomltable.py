@@ -140,6 +140,7 @@ cell = ["Lorem", "Ipsum", "Dolor"]
 
 [[header.row]]
 cell = ["", "", "Sit Amet"]
+padding-bottom = "0.7em"
 
 [[body.cell]]
 label = "Foo"
