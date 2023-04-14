@@ -340,13 +340,15 @@ class TestFillTemplate(unittest.TestCase):
 
     def test_string_conversion_specifiers(self):
         template = "lorem %(foo)s dolor %(bar::baz)s amet %(baz)s"
+        expected = "lorem bar dolor 3.14 amet None"
 
         self.assertEqual(
-            "lorem bar dolor 3.14 amet None",
-            m.fill_template(template, self.json_dict))
+            expected, m.fill_template(template, self.json_dict))
 
     def test_integer_conversion_specifiers(self):
         template = "lorem %(foo)d dolor %(bar::baz)d amet %(baz)d"
+        expected = "lorem  dolor 3 amet "
+
         output = io.StringIO()
 
         with contextlib.redirect_stderr(output):
@@ -354,7 +356,7 @@ class TestFillTemplate(unittest.TestCase):
 
         # Inserts empty string on TypeError.
         #
-        self.assertEqual("lorem  dolor 3 amet ", result)
+        self.assertEqual(expected, result)
 
         # Prints warning for each conversion error.
         #
@@ -366,6 +368,8 @@ class TestFillTemplate(unittest.TestCase):
 
     def test_float_conversion_specifiers(self):
         template = "lorem %(foo)f dolor %(bar::baz)f amet %(baz)f"
+        expected = "lorem  dolor 3.140000 amet "
+
         output = io.StringIO()
 
         with contextlib.redirect_stderr(output):
@@ -373,7 +377,7 @@ class TestFillTemplate(unittest.TestCase):
 
         # Inserts empty string on TypeError.
         #
-        self.assertEqual("lorem  dolor 3.140000 amet ", result)
+        self.assertEqual(expected, result)
 
         # Prints warning for each conversion error.
         #
@@ -386,6 +390,8 @@ class TestFillTemplate(unittest.TestCase):
     def test_float_conversion_specifiers_with_flags(self):
         template = ("lorem %(foo).03f dolor %(bar::baz).03f amet "
                     + "%(baz).03f")
+        expected = "lorem  dolor 3.140 amet "
+
         output = io.StringIO()
 
         with contextlib.redirect_stderr(output):
@@ -393,7 +399,7 @@ class TestFillTemplate(unittest.TestCase):
 
         # Inserts empty string on TypeError.
         #
-        self.assertEqual("lorem  dolor 3.140 amet ", result)
+        self.assertEqual(expected, result)
 
         # Prints warning for each conversion error.
         #
