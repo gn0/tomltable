@@ -406,5 +406,5 @@ class TestFillTemplate(unittest.TestCase):
     def test_raises_exception_for_missing_key(self):
         template = "lorem %(ipsum)s dolor sit amet"
 
-        with self.assertRaises(ValueError) as _:
+        with self.assertRaises(ValueError):
             m.fill_template(template, self.json_dict)
