@@ -532,6 +532,32 @@ def main(json_filename, title=None, label=None, from_template=False,
     if not debug:
         sys.tracebacklimit = 0
 
+    # Rule out some invalid argument combinations.
+    #
+
+    if from_template and only_template:
+        raise ValueError(
+            "--from-template and --only-template cannot be used "
+            + "together.")
+
+    if from_template:
+        if title is not None:
+            raise ValueError(
+                "--from-template and --title cannot be used together.")
+
+        if label is not None:
+            raise ValueError(
+                "--from-template and --label cannot be used together.")
+
+    if only_template:
+        if human_readable_numbers:
+            raise ValueError(
+                "--only-template and --human-readable-numbers cannot "
+                + "be used together.")
+
+    # Load or generate the template.
+    #
+
     if from_template:
         # Read the template from stdin.
         #
@@ -547,6 +573,9 @@ def main(json_filename, title=None, label=None, from_template=False,
 
         template = make_template(
             table_spec, json_filename, title, label)
+
+    # Use the template.
+    #
 
     if only_template:
         print(template)
