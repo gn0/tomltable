@@ -198,7 +198,7 @@ def parse_toml_row_spec(obj: Dict, parent_key: str) -> RowSpec:
         else:
             raise TableSpecificationError(
                 f"Field '{key}' for '{parent_key}.row' "
-                + f"is not 'label', 'cell', or 'padding-bottom'.")
+                + "is not 'label', 'cell', or 'padding-bottom'.")
 
     if cell is None:
         raise TableSpecificationError(
