@@ -379,11 +379,6 @@ def make_rows_for_cell_spec_regression(
         column_count: int) -> List[str]:
     coef = spec.coef
 
-    if spec.padding_bottom is None:
-        padding_bottom = "0.5em"
-    else:
-        padding_bottom = spec.padding_bottom
-
     cell_values = [
         (f"$%(n::coef::{coef}::est).03f$"
          + f"%(n::coef::{coef}::stars)s"),
@@ -393,7 +388,7 @@ def make_rows_for_cell_spec_regression(
     custom_spec = CellSpec()
     custom_spec.label = spec.label
     custom_spec.cell = cell_values
-    custom_spec.padding_bottom = padding_bottom
+    custom_spec.padding_bottom = spec.padding_bottom or "0.5em"
 
     return make_rows_for_cell_spec_custom(custom_spec, column_count)
 
