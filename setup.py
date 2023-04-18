@@ -14,7 +14,7 @@ setup(
     provides=['tomltable (1.0)'],
     entry_points={
         'console_scripts': [
-            'tomltable = tomltable.tomltable:main',
+            'tomltable = tomltable:main',
         ],
     }
     )

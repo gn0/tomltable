@@ -1,0 +1,4 @@
+
+
+class TableSpecificationError(ValueError):
+    pass

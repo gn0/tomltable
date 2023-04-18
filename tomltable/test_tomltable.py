@@ -4,7 +4,8 @@ import io
 import contextlib
 import toml
 
-from tomltable import tomltable as m
+import tomltable as m
+from tomltable.types import TableSpec
 
 
 class TestAddThousandsSeparator(unittest.TestCase):
@@ -156,7 +157,7 @@ cell = "YES"
 
     def test_only_tabular_if_no_title_and_no_label(self):
         result = m.make_template(
-            table_spec=m.TableSpec(),
+            table_spec=TableSpec(),
             json_filenames=[],
             title=None,
             label=None)
@@ -170,7 +171,7 @@ cell = "YES"
                              ("foo", None),
                              ("foo", "bar")):
             result = m.make_template(
-                table_spec=m.TableSpec(),
+                table_spec=TableSpec(),
                 json_filenames=[],
                 title=title,
                 label=label)
