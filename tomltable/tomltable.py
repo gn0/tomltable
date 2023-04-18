@@ -42,16 +42,21 @@ class RowSpec:
 
 
 @dataclass
-class SectionSpec:
+class OtherSectionSpec:
     cell_specs: List[CellSpec] = dcls.field(default_factory=lambda: [])
     row_specs: List[RowSpec]   = dcls.field(default_factory=lambda: [])
 
 
 @dataclass
+class HeaderSpec(OtherSectionSpec):
+    add_column_numbers: bool   = False
+
+
+@dataclass
 class TableSpec:
-    header_spec: SectionSpec = dcls.field(default_factory=lambda: SectionSpec())
-    body_spec: SectionSpec   = dcls.field(default_factory=lambda: SectionSpec())
-    footer_spec: SectionSpec = dcls.field(default_factory=lambda: SectionSpec())
+    header_spec: HeaderSpec       = dcls.field(default_factory=lambda: HeaderSpec())
+    body_spec: OtherSectionSpec   = dcls.field(default_factory=lambda: OtherSectionSpec())
+    footer_spec: OtherSectionSpec = dcls.field(default_factory=lambda: OtherSectionSpec())
 
 
 def load_json_file(filename: str) -> Dict:
@@ -106,6 +111,17 @@ def parse_toml_string_field(value: Any,
     raise TableSpecificationError(
         f"Value for field '{field_name}' in '{parent_keys}' should be "
         + f"a string but it has type '{type(value).__name__}' instead.")
+
+
+def parse_toml_bool_field(value: Any,
+                          field_name: str,
+                          parent_keys: str) -> bool:
+    if isinstance(value, bool):
+        return value
+
+    raise TableSpecificationError(
+        f"Value for field '{field_name}' in '{parent_keys}' should be "
+        + f"either 'true' or 'false' but it is '{value}' instead.")
 
 
 def parse_toml_tex_length_field(value: Any,
@@ -209,27 +225,57 @@ def parse_toml_row_spec(obj: Dict, parent_key: str) -> RowSpec:
     return result
 
 
-def parse_toml_section(obj: Dict, parent_key: str) -> SectionSpec:
-    result = SectionSpec()
+def parse_toml_header(obj: Dict) -> HeaderSpec:
+    result = HeaderSpec()
 
     for key, value in obj.items():
-        if key not in ("cell", "row"):
+        if (key in ("cell", "row")
+            and (not isinstance(value, list)
+                 or any(not isinstance(x, dict) for x in value))):
             raise TableSpecificationError(
-                "Second-level key should be 'cell' or 'row' but it is "
-                + f"'{key}' instead.")
+                f"Value for 'header.{key}' should be a list "
+                + "of dictionaries.")
 
-        if (not isinstance(value, list)
-            or any(not isinstance(x, dict) for x in value)):
+        if key == "add-column-numbers":
+            result.add_column_numbers = parse_toml_bool_field(
+                value, key, "header")
+        elif key == "cell":
+            result.cell_specs = [parse_toml_cell_spec(x, "header")
+                                 for x in value]
+        elif key == "row":
+            result.row_specs = [parse_toml_row_spec(x, "header")
+                                for x in value]
+        else:
             raise TableSpecificationError(
-                f"Value for '{parent_key}.{key}' should be a list "
+                "Second-level key for 'header' should be 'cell', "
+                + f"'row', or 'add-column-numbers' but it is '{key}' "
+                + "instead.")
+
+    return result
+
+
+def parse_toml_other_section(obj: Dict,
+                             parent_key: str) -> OtherSectionSpec:
+    result = OtherSectionSpec()
+
+    for key, value in obj.items():
+        if (key in ("cell", "row")
+            and (not isinstance(value, list)
+                 or any(not isinstance(x, dict) for x in value))):
+            raise TableSpecificationError(
+                f"Value for 'header.{key}' should be a list "
                 + "of dictionaries.")
 
         if key == "cell":
-            specs = [parse_toml_cell_spec(x, parent_key) for x in value] # type: ignore
+            result.cell_specs = [parse_toml_cell_spec(x, parent_key)
+                                 for x in value]
+        elif key == "row":
+            result.row_specs = [parse_toml_row_spec(x, parent_key)
+                                for x in value]
         else:
-            specs = [parse_toml_row_spec(x, parent_key) for x in value] # type: ignore
-
-        setattr(result, f"{key}_specs", specs)
+            raise TableSpecificationError(
+                f"Second-level key for '{parent_key}' should be 'cell' "
+                + f"or 'row' but it is '{key}' instead.")
 
     return result
 
@@ -238,12 +284,16 @@ def parse_toml(toml_spec: Dict) -> TableSpec:
     result = TableSpec()
 
     for key, value in toml_spec.items():
-        if key not in ("header", "body", "footer"):
+        if key == "header":
+            result.header_spec = parse_toml_header(value)
+        elif key in ("body", "footer"):
+            setattr(result,
+                    f"{key}_spec",
+                    parse_toml_other_section(value, key))
+        else:
             raise TableSpecificationError(
                 "Section should be 'header', 'body', or 'footer' "
                 + f"but it is '{key}' instead.")
-
-        setattr(result, f"{key}_spec", parse_toml_section(value, key))
 
     return result
 
@@ -446,6 +496,13 @@ def make_rows_for_row_spec(
     return [row]
 
 
+def make_row_for_column_numbers(column_count: int) -> str:
+    return (
+        r" & {} \\"
+        .format(" & ".join(f"({number})"
+                           for number in range(1, column_count + 1))))
+
+
 def make_template(
         table_spec: TableSpec,
         json_filenames: List[str],
@@ -484,6 +541,10 @@ def make_template(
         for row in table_spec.header_spec.row_specs:
             lines.extend(
                 make_rows_for_row_spec(row, column_count))
+
+        if table_spec.header_spec.add_column_numbers:
+            lines.append(
+                make_row_for_column_numbers(column_count))
 
     lines.append(r"\midrule")
 

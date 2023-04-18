@@ -72,6 +72,25 @@ cell = ["", "YES", "YES"]
 """
         )
 
+        self.spec_without_column_numbers = toml.loads(
+            """
+[[body.cell]]
+label = "Foo"
+coef = "foo"
+"""
+        )
+
+        self.spec_with_column_numbers = toml.loads(
+            """
+[header]
+add-column-numbers = true
+
+[[body.cell]]
+label = "Foo"
+coef = "foo"
+"""
+        )
+
         self.spec_full = toml.loads(
             """
 [[header.row]]
@@ -180,7 +199,9 @@ cell = "YES"
                     label=None)))
 
         for spec in (self.spec_only_body,
-                     self.spec_body_and_footer_cell):
+                     self.spec_body_and_footer_cell,
+                     self.spec_without_column_numbers,
+                     self.spec_with_column_numbers):
             self.assertEqual(
                 4,
                 get_column_count(
@@ -243,6 +264,8 @@ cell = "YES"
                 (self.spec_only_body, ["a", "b", "c"]),
                 (self.spec_body_and_footer_cell, ["a", "b", "c"]),
                 (self.spec_body_and_footer_row, ["a", "b", "c"]),
+                (self.spec_without_column_numbers, ["a", "b", "c"]),
+                (self.spec_with_column_numbers, ["a", "b", "c"]),
                 (self.spec_full, ["a", "b", "c"]),
                 (self.spec_full_with_single_column, ["a"])):
             template = m.make_template(
@@ -255,6 +278,31 @@ cell = "YES"
             cell_counts = get_cell_counts(template)
 
             self.assertTrue(all(x == column_count for x in cell_counts))
+
+    def test_column_numbers_in_header_if_specified(self):
+        template = m.make_template(
+            table_spec=m.parse_toml(self.spec_with_column_numbers),
+            json_filenames=["a", "b", "c"],
+            title=None,
+            label=None)
+
+        self.assertEqual(
+            1,
+            len([line
+                 for line in template.splitlines()
+                 if re.match(r"^ *& *\(1\) *& *\(2\) *& *\(3\) *\\\\$",
+                             line) is not None]))
+
+    def test_no_column_numbers_in_header_if_unspecified(self):
+        template = m.make_template(
+            table_spec=m.parse_toml(self.spec_without_column_numbers),
+            json_filenames=["a", "b", "c"],
+            title=None,
+            label=None)
+
+        self.assertTrue(
+            all(re.match(r"^ *& *\(1\)", line) is None
+                for line in template.splitlines()))
 
 
 class TestFillTemplate(unittest.TestCase):
