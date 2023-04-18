@@ -1,4 +1,3 @@
-# from typing import Any, Dict, Generator, List, Tuple
 from typing import Any, Dict, List
 
 from tomltable.errors import TableSpecificationError
