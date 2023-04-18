@@ -533,46 +533,45 @@ def make_template(
     # Add header.
     #
 
-    if table_spec.header_spec is not None:
-        for cell in table_spec.header_spec.cell_specs:
-            lines.extend(
-                make_rows_for_cell_spec(cell, column_count))
+    for cell in table_spec.header_spec.cell_specs:
+        lines.extend(
+            make_rows_for_cell_spec(cell, column_count))
 
-        for row in table_spec.header_spec.row_specs:
-            lines.extend(
-                make_rows_for_row_spec(row, column_count))
+    for row in table_spec.header_spec.row_specs:
+        lines.extend(
+            make_rows_for_row_spec(row, column_count))
 
-        if table_spec.header_spec.add_column_numbers:
-            lines.append(
-                make_row_for_column_numbers(column_count))
+    if table_spec.header_spec.add_column_numbers:
+        lines.append(
+            make_row_for_column_numbers(column_count))
 
     lines.append(r"\midrule")
 
     # Add body.
     #
 
-    if table_spec.body_spec is not None:
-        for cell in table_spec.body_spec.cell_specs:
-            lines.extend(
-                make_rows_for_cell_spec(cell, column_count))
+    for cell in table_spec.body_spec.cell_specs:
+        lines.extend(
+            make_rows_for_cell_spec(cell, column_count))
 
-        for row in table_spec.body_spec.row_specs:
-            lines.extend(
-                make_rows_for_row_spec(row, column_count))
+    for row in table_spec.body_spec.row_specs:
+        lines.extend(
+            make_rows_for_row_spec(row, column_count))
 
     # Add footer.
     #
 
-    if table_spec.footer_spec is not None:
+    if (len(table_spec.footer_spec.cell_specs) > 0
+        or len(table_spec.footer_spec.row_specs) > 0):
         lines.append(r"\midrule")
 
-        for cell in table_spec.footer_spec.cell_specs:
-            lines.extend(
-                make_rows_for_cell_spec(cell, column_count))
+    for cell in table_spec.footer_spec.cell_specs:
+        lines.extend(
+            make_rows_for_cell_spec(cell, column_count))
 
-        for row in table_spec.footer_spec.row_specs:
-            lines.extend(
-                make_rows_for_row_spec(row, column_count))
+    for row in table_spec.footer_spec.row_specs:
+        lines.extend(
+            make_rows_for_row_spec(row, column_count))
 
     lines.append(r"\bottomrule")
     lines.append(r"\end{tabular}")
