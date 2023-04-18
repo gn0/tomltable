@@ -161,12 +161,12 @@ def parse_toml_cell_spec(obj: Dict, parent_key: str) -> CellSpec:
 
     if result.cell is None and result.coef is None:
         raise TableSpecificationError(
-            "Must have either field 'cell' or field 'coef' specified "
+            "Must specify either field 'cell' or field 'coef' "
             + f"for '{parent_key}.cell'.")
 
     if result.cell is not None and result.coef is not None:
         raise TableSpecificationError(
-            "Cannot have both field 'cell' and field 'coef' for "
+            "Cannot specify both field 'cell' and field 'coef' for "
             + f"'{parent_key}.cell'.")
 
     return result
