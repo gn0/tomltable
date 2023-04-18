@@ -48,14 +48,14 @@ def load_json_file(filename: str) -> Dict:
 
 
 def traverse(obj: Any) -> Generator[Tuple[str | None, Any], None, None]:
-    if type(obj) is dict:
+    if isinstance(obj, dict):
         for key, obj2 in obj.items():
             for subpath, value in traverse(obj2):
                 if subpath is None:
                     yield f"{key}", value
                 else:
                     yield f"{key}::{subpath}", value
-    elif type(obj) is list:
+    elif isinstance(obj, list):
         for i, obj2 in enumerate(obj, 1):
             for subpath, value in traverse(obj2):
                 if subpath is None:
@@ -88,7 +88,7 @@ def add_thousands_separator(string: str) -> str:
 def parse_toml_string_field(value: Any,
                             field_name: str,
                             parent_keys: str) -> str:
-    if type(value) is str:
+    if isinstance(value, str):
         return value
 
     raise TableSpecificationError(
@@ -99,7 +99,7 @@ def parse_toml_string_field(value: Any,
 def parse_toml_tex_length_field(value: Any,
                                 field_name: str,
                                 parent_keys: str) -> str:
-    if (type(value) is not str
+    if (not isinstance(value, str)
         or re.match("^(-?[0-9]*[.])?[0-9]+(pt|mm|cm|in|ex|em|mu|sp)$",
                     value) is None):
         raise TableSpecificationError(
@@ -111,17 +111,17 @@ def parse_toml_tex_length_field(value: Any,
 
 
 def parse_toml_field_cell(value: Any, parent_keys: str) -> List[str]:
-    if type(value) is str:
+    if isinstance(value, str):
         return [value]
 
-    if type(value) is list:
+    if isinstance(value, list):
         if len(value) == 0:
             raise TableSpecificationError(
                 f"Value for field 'cell' in '{parent_keys}' should be "
                 + "a string or a list of strings but it is an empty "
                 + "list instead.")
 
-        if type(value[0]) is not str:
+        if not isinstance(value[0], str):
             # NOTE It is enough to check the type of the first element.
             # `toml.loads` enforces homogeneity within the list.
             #
@@ -208,8 +208,8 @@ def parse_toml_section(obj: Dict, parent_key: str) -> SectionSpec:
                 "Second-level key should be 'cell' or 'row' but it is "
                 + f"'{key}' instead.")
 
-        if (type(value) is not list
-            or any(type(x) is not dict for x in value)):
+        if (not isinstance(value, list)
+            or any(not isinstance(x, dict) for x in value)):
             raise TableSpecificationError(
                 f"Value for '{parent_key}.{key}' should be a list "
                 + "of dictionaries.")
