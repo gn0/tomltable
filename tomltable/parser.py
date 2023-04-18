@@ -248,13 +248,8 @@ def confirm_consistent_column_count(
 
             if count_a != count_b:
                 raise TableSpecificationError(
-                    ("Inconsistent column counts: "
-                     + "{} has {} column{} but {} has {}.")
-                    .format(section_a,
-                            count_a,
-                            "s" if count_a > 1 else "",
-                            section_b,
-                            count_b))
+                    f"Inconsistent column counts: {count_a} in "
+                    + f"{section_a} but {count_b} in {section_b}.")
 
     # Confirm consistency between the specification and the JSON files.
     #
@@ -268,17 +263,14 @@ def confirm_consistent_column_count(
         count_section = counts_in_section[0]
 
         if count_json != count_section:
+            plural_section = "s" if count_section > 1 else ""
+            plural_json = "s" if count_json > 1 else ""
+
             raise Exception(
-                ("Table specification contains {}{} column{} "
-                 + "but there {} {}{} JSON file{} passed "
-                 + "in the command-line arguments.")
-                .format(
-                    "only " if count_section < count_json else "",
-                    count_section,
-                    "s" if count_section > 1 else "",
-                    "are" if count_json > 1 else "is",
-                    "only " if count_json < count_section else "",
-                    count_json,
-                    "s" if count_json > 1 else ""))
+                "Inconsistency between the table specification and "
+                + f"the command-line arguments: {count_section} "
+                + f"column{plural_section} in the specification but "
+                + f"{count_json} JSON file{plural_json} in the "
+                + "arguments.")
 
         break
