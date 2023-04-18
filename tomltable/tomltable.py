@@ -192,7 +192,7 @@ def parse_toml_row_spec(obj: Dict, parent_key: str) -> RowSpec:
 
     if cell is None:
         raise TableSpecificationError(
-            f"Must have field 'cell' specified for '{parent_key}.row'.")
+            f"Must specify field 'cell' for '{parent_key}.row'.")
 
     result.cell = cell
 
