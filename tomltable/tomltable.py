@@ -14,19 +14,31 @@ class TableSpecificationError(ValueError):
     pass
 
 
+class TeXLength(str):
+    def __new__(cls, value: str):
+        if (not isinstance(value, str)
+            or re.match(
+                "^(-?[0-9]*[.])?[0-9]+(pt|mm|cm|in|ex|em|mu|sp)$",
+                value) is None):
+            raise ValueError(
+                f"'{value}' is not a valid TeX length specification.")
+
+        return super().__new__(cls, value)
+
+
 @dataclass
 class CellSpec:
-    label: str | None          = None
-    cell: List[str] | None     = None
-    coef: str | None           = None
-    padding_bottom: str | None = None
+    label: str | None                = None
+    cell: List[str] | None           = None
+    coef: str | None                 = None
+    padding_bottom: TeXLength | None = None
 
 
 @dataclass
 class RowSpec:
-    label: str | None          = None
-    cell: List[str]            = dcls.field(default_factory=lambda: [])
-    padding_bottom: str | None = None
+    label: str | None                = None
+    cell: List[str]                  = dcls.field(default_factory=lambda: [])
+    padding_bottom: TeXLength | None = None
 
 
 @dataclass
@@ -98,16 +110,14 @@ def parse_toml_string_field(value: Any,
 
 def parse_toml_tex_length_field(value: Any,
                                 field_name: str,
-                                parent_keys: str) -> str:
-    if (not isinstance(value, str)
-        or re.match("^(-?[0-9]*[.])?[0-9]+(pt|mm|cm|in|ex|em|mu|sp)$",
-                    value) is None):
+                                parent_keys: str) -> TeXLength:
+    try:
+        return TeXLength(value)
+    except ValueError as error:
         raise TableSpecificationError(
             f"Value for field '{field_name}' in '{parent_keys}' should "
             + "be a string with a valid TeX length specification but "
-            + f"it is '{value}' instead.")
-
-    return value
+            + f"it is '{value}' instead.") from error
 
 
 def parse_toml_field_cell(value: Any, parent_keys: str) -> List[str]:
@@ -386,7 +396,7 @@ def make_rows_for_cell_spec_regression(
     custom_spec = CellSpec()
     custom_spec.label = spec.label
     custom_spec.cell = cell_values
-    custom_spec.padding_bottom = spec.padding_bottom or "0.5em"
+    custom_spec.padding_bottom = spec.padding_bottom or TeXLength("0.5em")
 
     return make_rows_for_cell_spec_custom(custom_spec, column_count)
 
