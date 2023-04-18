@@ -87,58 +87,56 @@ def add_thousands_separator(string: str) -> str:
 
 def parse_toml_string_field(value: Any,
                             field_name: str,
-                            parent_keys: Tuple[str, str]) -> str:
+                            parent_keys: str) -> str:
     if type(value) is str:
         return value
 
     raise TableSpecificationError(
-        f"Value for field '{field_name}' in '{parent_keys[0]}."
-        + f"{parent_keys[1]}' should be a string but it has type "
-        + f"'{type(value).__name__}' instead.")
+        f"Value for field '{field_name}' in '{parent_keys}' should be "
+        + f"a string but it has type '{type(value).__name__}' instead.")
 
 
 def parse_toml_tex_length_field(value: Any,
                                 field_name: str,
-                                parent_keys: Tuple[str, str]) -> str:
+                                parent_keys: str) -> str:
     if (type(value) is not str
         or re.match("^(-?[0-9]*[.])?[0-9]+(pt|mm|cm|in|ex|em|mu|sp)$",
                     value) is None):
         raise TableSpecificationError(
-            f"Value for field '{field_name}' in '{parent_keys[0]}."
-            + f"{parent_keys[1]}' should be a string with a valid TeX "
-            + f"length specification but it is '{value}' instead.")
+            f"Value for field '{field_name}' in '{parent_keys}' should "
+            + "be a string with a valid TeX length specification but "
+            + f"it is '{value}' instead.")
 
     return value
 
 
-def parse_toml_field_cell(value: Any,
-                          parent_keys: Tuple[str, str]) -> List[str]:
+def parse_toml_field_cell(value: Any, parent_keys: str) -> List[str]:
     if type(value) is str:
         return [value]
 
     if type(value) is list:
         if len(value) == 0:
             raise TableSpecificationError(
-                f"Value for field 'cell' in '{parent_keys[0]}."
-                + f"{parent_keys[1]}' should be a string or a list "
-                + "of strings but it is an empty list instead.")
+                f"Value for field 'cell' in '{parent_keys}' should be "
+                + "a string or a list of strings but it is an empty "
+                + "list instead.")
 
         if type(value[0]) is not str:
             # NOTE It is enough to check the type of the first element.
             # `toml.loads` enforces homogeneity within the list.
             #
             raise TableSpecificationError(
-                f"Value for field 'cell' in '{parent_keys[0]}."
-                + f"{parent_keys[1]}' should be a string or a list "
-                + "of strings but it is a list of values of type "
-                + f"'{type(value[0]).__name__}' instead.")
+                f"Value for field 'cell' in '{parent_keys}' should be "
+                + "a string or a list of strings but it is a list of "
+                + f"values of type '{type(value[0]).__name__}' "
+                + "instead.")
 
         return value
 
     raise TableSpecificationError(
-        f"Value for field 'cell' in '{parent_keys[0]}."
-        + f"{parent_keys[1]}' should be a string or a list of strings "
-        + f"but it has type '{type(value).__name__}' instead.")
+        f"Value for field 'cell' in '{parent_keys}' should be a string "
+        + "or a list of strings but it has type "
+        + f"'{type(value).__name__}' instead.")
 
 
 def parse_toml_cell_spec(obj: Dict, parent_key: str) -> CellSpec:
@@ -149,13 +147,13 @@ def parse_toml_cell_spec(obj: Dict, parent_key: str) -> CellSpec:
             setattr(result,
                     key,
                     parse_toml_string_field(
-                        value, key, (parent_key, "cell")))
+                        value, key, f"{parent_key}.cell"))
         elif key == "cell":
             result.cell = parse_toml_field_cell(
-                value, (parent_key, "cell"))
+                value, f"{parent_key}.cell")
         elif key == "padding-bottom":
             result.padding_bottom = parse_toml_tex_length_field(
-                value, key, (parent_key, "cell"))
+                value, key, f"{parent_key}.cell")
         else:
             raise TableSpecificationError(
                 f"Field '{key}' for '{parent_key}.cell' "
@@ -181,12 +179,12 @@ def parse_toml_row_spec(obj: Dict, parent_key: str) -> RowSpec:
     for key, value in obj.items():
         if key == "label":
             result.label = parse_toml_string_field(
-                value, key, (parent_key, "row"))
+                value, key, f"{parent_key}.row")
         elif key == "cell":
-            cell = parse_toml_field_cell(value, (parent_key, "row"))
+            cell = parse_toml_field_cell(value, f"{parent_key}.row")
         elif key == "padding-bottom":
             result.padding_bottom = parse_toml_tex_length_field(
-                value, key, (parent_key, "row"))
+                value, key, f"{parent_key}.row")
         else:
             raise TableSpecificationError(
                 f"Field '{key}' for '{parent_key}.row' "
