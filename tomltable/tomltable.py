@@ -1,6 +1,11 @@
 import json
 import sys
 import re
+
+import dataclasses as dcls
+from dataclasses import dataclass
+from typing import Any, Dict, Generator, List, Tuple
+
 import click
 import toml
 
@@ -9,12 +14,40 @@ class TableSpecificationError(ValueError):
     pass
 
 
-def load_json_file(filename):
+@dataclass
+class CellSpec:
+    label: str | None          = None
+    cell: List[str] | None     = None
+    coef: str | None           = None
+    padding_bottom: str | None = None
+
+
+@dataclass
+class RowSpec:
+    label: str | None          = None
+    cell: List[str]            = dcls.field(default_factory=lambda: [])
+    padding_bottom: str | None = None
+
+
+@dataclass
+class SectionSpec:
+    cell_specs: List[CellSpec] = dcls.field(default_factory=lambda: [])
+    row_specs: List[RowSpec]   = dcls.field(default_factory=lambda: [])
+
+
+@dataclass
+class TableSpec:
+    header_spec: SectionSpec = dcls.field(default_factory=lambda: SectionSpec())
+    body_spec: SectionSpec   = dcls.field(default_factory=lambda: SectionSpec())
+    footer_spec: SectionSpec = dcls.field(default_factory=lambda: SectionSpec())
+
+
+def load_json_file(filename: str) -> Dict:
     with open(filename, "r") as json_file:
         return json.load(json_file)
 
 
-def traverse(obj):
+def traverse(obj: Any) -> Generator[Tuple[str | None, Any], None, None]:
     if type(obj) is dict:
         for key, obj2 in obj.items():
             for subpath, value in traverse(obj2):
@@ -33,12 +66,12 @@ def traverse(obj):
         yield None, obj
 
 
-def make_json_dict(json_files):
+def make_json_dict(json_files: List[str]) -> Dict:
     return dict(traverse(json_files))
 
 
-def add_thousands_separator(string):
-    def replace(match):
+def add_thousands_separator(string: str) -> str:
+    def replace(match: re.Match) -> str:
         number = match.group(2)
 
         if len(number) < 4:
@@ -52,160 +85,172 @@ def add_thousands_separator(string):
     return re.sub(r"(^|[^.0-9])([0-9]+)", replace, string)
 
 
-def nested_get(obj, *args):
-    if len(args) == 0:
-        return obj
+def parse_toml_string_field(value: Any,
+                            field_name: str,
+                            parent_keys: Tuple[str, str]) -> str:
+    if type(value) is str:
+        return value
 
-    if type(obj) is list:
-        index = args[0]
-
-        if type(index) is not int:
-            raise ValueError(
-                f"Non-numeric index '{index}' for object {obj}.")
-
-        if 0 <= index < len(obj):
-            return nested_get(obj[index], *args[1:])
-
-        return dict()
-
-    if type(obj) is dict:
-        key = args[0]
-
-        if key in obj:
-            return nested_get(obj[key], *args[1:])
-
-        return dict()
-
-    raise ValueError(f"Object {obj} is not a list or a dict.")
+    raise TableSpecificationError(
+        f"Value for field '{field_name}' in '{parent_keys[0]}."
+        + f"{parent_keys[1]}' should be a string but it has type "
+        + f"'{type(value).__name__}' instead.")
 
 
-def confirm_valid_specification(table_spec):
-    # A valid specification has to have the following characteristics:
-    #
-    # 1. Top-level keys must be "header", "body", or "footer".
-    # 2. Second-level keys must be "cell" or "row".
-    # 3. If the second-level key is "cell", then the third-level keys
-    #    must be "label", "cell", "coef", or "padding-bottom".
-    # 4. If the second-level key is "row", then the third-level keys
-    #    must be "label", "cell", or "padding-bottom".
-    # 5. The value for a third-level key "label" must be string.
-    # 6. The value for a third-level key "cell" must be string or a list
-    #    of strings.
-    # 7. The value for a third-level key "coef" must be string.
-    # 8. The value for a third-level key "padding-bottom" must be
-    #    string containing a valid TeX length specification.
-    #
+def parse_toml_tex_length_field(value: Any,
+                                field_name: str,
+                                parent_keys: Tuple[str, str]) -> str:
+    if (type(value) is not str
+        or re.match("^(-?[0-9]*[.])?[0-9]+(pt|mm|cm|in|ex|em|mu|sp)$",
+                    value) is None):
+        raise TableSpecificationError(
+            f"Value for field '{field_name}' in '{parent_keys[0]}."
+            + f"{parent_keys[1]}' should be a string with a valid TeX "
+            + f"length specification but it is '{value}' instead.")
 
-    for key in table_spec:
-        # Top-level keys.
-        #
+    return value
 
+
+def parse_toml_field_cell(value: Any,
+                          parent_keys: Tuple[str, str]) -> List[str]:
+    if type(value) is str:
+        return [value]
+
+    if type(value) is list:
+        if len(value) == 0:
+            raise TableSpecificationError(
+                f"Value for field 'cell' in '{parent_keys[0]}."
+                + f"{parent_keys[1]}' should be a string or a list "
+                + "of strings but it is an empty list instead.")
+
+        if type(value[0]) is not str:
+            # NOTE It is enough to check the type of the first element.
+            # `toml.loads` enforces homogeneity within the list.
+            #
+            raise TableSpecificationError(
+                f"Value for field 'cell' in '{parent_keys[0]}."
+                + f"{parent_keys[1]}' should be a string or a list "
+                + "of strings but it is a list of values of type "
+                + f"'{type(value[0]).__name__}' instead.")
+
+        return value
+
+    raise TableSpecificationError(
+        f"Value for field 'cell' in '{parent_keys[0]}."
+        + f"{parent_keys[1]}' should be a string or a list of strings "
+        + f"but it has type '{type(value).__name__}' instead.")
+
+
+def parse_toml_cell_spec(obj: Dict, parent_key: str) -> CellSpec:
+    result = CellSpec()
+
+    for key, value in obj.items():
+        if key in ("label", "coef"):
+            setattr(result,
+                    key,
+                    parse_toml_string_field(
+                        value, key, (parent_key, "cell")))
+        elif key == "cell":
+            result.cell = parse_toml_field_cell(
+                value, (parent_key, "cell"))
+        elif key == "padding-bottom":
+            result.padding_bottom = parse_toml_tex_length_field(
+                value, key, (parent_key, "cell"))
+        else:
+            raise TableSpecificationError(
+                f"Field '{key}' for '{parent_key}.cell' "
+                + "is not 'label', 'cell', or 'padding-bottom'.")
+
+    if result.cell is None and result.coef is None:
+        raise TableSpecificationError(
+            "Must have either field 'cell' or field 'coef' specified "
+            + f"for '{parent_key}.cell'.")
+
+    if result.cell is not None and result.coef is not None:
+        raise TableSpecificationError(
+            "Cannot have both field 'cell' and field 'coef' for "
+            + f"'{parent_key}.cell'.")
+
+    return result
+
+
+def parse_toml_row_spec(obj: Dict, parent_key: str) -> RowSpec:
+    result = RowSpec()
+    cell = None
+
+    for key, value in obj.items():
+        if key == "label":
+            result.label = parse_toml_string_field(
+                value, key, (parent_key, "row"))
+        elif key == "cell":
+            cell = parse_toml_field_cell(value, (parent_key, "row"))
+        elif key == "padding-bottom":
+            result.padding_bottom = parse_toml_tex_length_field(
+                value, key, (parent_key, "row"))
+        else:
+            raise TableSpecificationError(
+                f"Field '{key}' for '{parent_key}.row' "
+                + f"is not 'label', 'cell', or 'padding-bottom'.")
+
+    if cell is None:
+        raise TableSpecificationError(
+            f"Must have field 'cell' specified for '{parent_key}.row'.")
+
+    result.cell = cell
+
+    return result
+
+
+def parse_toml_section(obj: Dict, parent_key: str) -> SectionSpec:
+    result = SectionSpec()
+
+    for key, value in obj.items():
+        if key not in ("cell", "row"):
+            raise TableSpecificationError(
+                "Second-level key should be 'cell' or 'row' but it is "
+                + f"'{key}' instead.")
+
+        if (type(value) is not list
+            or any(type(x) is not dict for x in value)):
+            raise TableSpecificationError(
+                f"Value for '{parent_key}.{key}' should be a list "
+                + "of dictionaries.")
+
+        if key == "cell":
+            specs = [parse_toml_cell_spec(x, parent_key) for x in value] # type: ignore
+        else:
+            specs = [parse_toml_row_spec(x, parent_key) for x in value] # type: ignore
+
+        setattr(result, f"{key}_specs", specs)
+
+    return result
+
+
+def parse_toml(toml_spec: Dict) -> TableSpec:
+    result = TableSpec()
+
+    for key, value in toml_spec.items():
         if key not in ("header", "body", "footer"):
             raise TableSpecificationError(
-                ("Top-level key '{}' is not 'header', 'body', or "
-                 + "'footer'.")
-                .format(key))
+                "Section should be 'header', 'body', or 'footer' "
+                + f"but it is '{key}' instead.")
 
-        if type(table_spec[key]) is not dict:
-            raise TableSpecificationError(
-                f"Value for top-level key '{key}' is not a dictionary.")
+        setattr(result, f"{key}_spec", parse_toml_section(value, key))
 
-        # Second-level keys.
-        #
-        for second_key in table_spec[key]:
-            if second_key not in ("cell", "row"):
-                raise TableSpecificationError(
-                    f"Second-level key '{second_key}' is not 'cell' "
-                    + "or 'row'.")
-
-            if (type(table_spec[key][second_key]) is not list
-                or any(type(x) is not dict
-                       for x in table_spec[key][second_key])):
-                raise TableSpecificationError(
-                    f"Value for '{key}.{second_key}' is not a list "
-                    + "of dictionaries.")
-
-            # Third-level keys.
-            #
-            for block in table_spec[key][second_key]:
-                for third_key, value in block.items():
-                    if (second_key == "cell"
-                        and third_key not in ("label",
-                                              "cell",
-                                              "coef",
-                                              "padding-bottom")):
-                        raise TableSpecificationError(
-                            ("Field '{}' for '{}.{}' is not 'label', "
-                             + "'cell', 'coef', or 'padding-bottom'.")
-                            .format(third_key, key, second_key))
-
-                    if (second_key == "row"
-                        and third_key not in ("label",
-                                              "cell",
-                                              "padding-bottom")):
-                        raise TableSpecificationError(
-                            ("Field '{}' for '{}.{}' is not 'label', "
-                             + "'cell', or 'padding-bottom'.")
-                            .format(third_key, key, second_key))
-
-                    # Value types for third-level keys.
-                    #
-
-                    if (third_key in ("label", "coef")
-                        and type(value) is not str):
-                        raise TableSpecificationError(
-                            ("Value for field '{}' should be a string "
-                             + "but it has type '{}' instead.")
-                            .format(third_key, type(value).__name__))
-
-                    if third_key == "cell" and type(value) is not str:
-                        if type(value) is not list:
-                            raise TableSpecificationError(
-                                ("Value for field 'cell' should be a "
-                                 + "string or a list of strings but it "
-                                 + "has type '{}' instead.")
-                                .format(type(value).__name__))
-
-                        if len(value) == 0:
-                            raise TableSpecificationError(
-                                "Value for field 'cell' should be a "
-                                + "string or a list of strings but it "
-                                + "is an empty list instead.")
-
-                        if type(value[0]) is not str:
-                            # NOTE It is enough to check the type of the
-                            # first element.  `toml.loads` enforces
-                            # homogeneity within the list.
-                            #
-                            raise TableSpecificationError(
-                                ("Value for field 'cell' should be a "
-                                 + "string or a list of strings but it "
-                                 + "is a list of values of type '{}' "
-                                 + "instead.")
-                                .format(type(value[0]).__name__))
-
-                    if (third_key == "padding-bottom"
-                        and (type(value) is not str
-                             or re.match(
-                                 ("^(-?[0-9]*[.])?[0-9]+"
-                                  + "(pt|mm|cm|in|ex|em|mu|sp)$"),
-                                 value) is None)):
-                        raise TableSpecificationError(
-                            ("Value for field 'padding-bottom' should "
-                             + "be a string with a valid TeX length "
-                             + "specification but it is '{}' instead.")
-                            .format(value))
+    return result
 
 
-def confirm_consistent_column_count(table_spec, json_filenames):
+def confirm_consistent_column_count(
+        table_spec: TableSpec,
+        json_filenames: List[str]) -> None:
     sections = ("header", "body", "footer")
 
     def get_and_confirm_counts(section):
         counts_in_section = list(
-            len(row["cell"])
-            for row in nested_get(
-                    table_spec, section, "row")
-            if "cell" in row)
+            len(row.cell)
+            for row in (getattr(table_spec, f"{section}_spec")
+                        .row_specs)
+            if row.cell is not None)
 
         if (len(counts_in_section) > 1
             and not all(value == counts_in_section[0]
@@ -273,51 +318,43 @@ def confirm_consistent_column_count(table_spec, json_filenames):
         break
 
 
-def get_column_count(table_spec):
+def get_column_count(table_spec: TableSpec) -> int | None:
     for section in ("header", "body", "footer"):
-        cell_values = nested_get(table_spec, section, "row", 0, "cell")
+        row_specs = getattr(table_spec, f"{section}_spec").row_specs
 
-        if cell_values == dict():
-            column_count = 0
-        elif type(cell_values) is list:
-            column_count = len(cell_values)
-        else:
-            column_count = 1
+        if len(row_specs) > 0:
+            column_count = len(row_specs[0].cell)
 
-        if column_count > 0:
-            return column_count
+            if column_count > 0:
+                return column_count
 
     return None
 
 
-def escape_tex(value):
+def escape_tex(value: str) -> str:
     return (value
             .replace("\\", "\\\\")
             .replace("&", "\\&"))
 
 
-def adapt_cell_value_to_column(value, column_number):
+def adapt_cell_value_to_column(value: str, column_number: int) -> str:
     return re.sub(r"%\(n(::[^)]+\)[.0-9]*[dfs])",
                   fr"%({column_number}\1",
                   value)
 
 
-def make_rows_for_cell_spec_custom(spec, column_count):
-    cell_values = spec.get("cell", [])
-    padding_bottom = spec.get("padding-bottom")
-
-    # Allow singleton 'cell' fields to be specified without square
-    # brackets around the cell value.
-    #
-    if type(cell_values) is not list:
-        cell_values = [cell_values]
+def make_rows_for_cell_spec_custom(
+        spec: CellSpec,
+        column_count: int) -> List[str]:
+    cell_values = spec.cell or []
+    padding_bottom = spec.padding_bottom
 
     cell_count = len(cell_values)
     rows = []
 
     for cell_index, cell_value in enumerate(cell_values):
         if cell_index == 0:
-            row = escape_tex(spec.get("label", ""))
+            row = escape_tex(spec.label or "")
         else:
             row = ""
 
@@ -337,8 +374,15 @@ def make_rows_for_cell_spec_custom(spec, column_count):
     return rows
 
 
-def make_rows_for_cell_spec_regression(spec, column_count):
-    coef = spec.get("coef")
+def make_rows_for_cell_spec_regression(
+        spec: CellSpec,
+        column_count: int) -> List[str]:
+    coef = spec.coef
+
+    if spec.padding_bottom is None:
+        padding_bottom = "0.5em"
+    else:
+        padding_bottom = spec.padding_bottom
 
     cell_values = [
         (f"$%(n::coef::{coef}::est).03f$"
@@ -346,48 +390,50 @@ def make_rows_for_cell_spec_regression(spec, column_count):
         f"(%(n::coef::{coef}::se).04f)"
     ]
 
-    custom_spec = {
-        "label": spec.get("label", ""),
-        "cell": cell_values,
-        "padding-bottom": spec.get("padding-bottom", "0.5em")
-    }
+    custom_spec = CellSpec()
+    custom_spec.label = spec.label
+    custom_spec.cell = cell_values
+    custom_spec.padding_bottom = padding_bottom
 
     return make_rows_for_cell_spec_custom(custom_spec, column_count)
 
 
-def make_rows_for_cell_spec(spec, column_count):
-    if "coef" in spec:
+def make_rows_for_cell_spec(
+        spec: CellSpec,
+        column_count: int) -> List[str]:
+    if spec.coef is not None:
         return make_rows_for_cell_spec_regression(spec, column_count)
 
-    if "cell" in spec:
+    if spec.cell is not None:
         return make_rows_for_cell_spec_custom(spec, column_count)
 
+    # NOTE `parse_toml_cell_spec` should ensure that exactly one of
+    # 'coef' and 'cell' is specified.  So if we reach here, we have a
+    # bug in the parser.
+    #
     raise TableSpecificationError(
         f"Cell specification {spec} gives neither 'coef' nor 'cell'.")
 
 
-def make_rows_for_row_spec(spec, column_count):
-    cell_values = spec.get("cell", [])
-    padding_bottom = spec.get("padding-bottom")
-
-    # Allow singleton 'cell' fields to be specified without square
-    # brackets around the cell value.
-    #
-    if type(cell_values) is not list:
-        cell_values = [cell_values]
+def make_rows_for_row_spec(
+        spec: RowSpec,
+        column_count: int) -> List[str]:
+    cell_values = spec.cell
+    padding_bottom = spec.padding_bottom
 
     cell_count = len(cell_values)
 
     if cell_count != column_count:
+        # NOTE `confirm_consistent_column_count` should ensure that the
+        # cell count equals the column count.  So if we reach here, we
+        # have a bug.
+        #
         raise TableSpecificationError(
-            ("Row specification {} has {} cell values but the column "
-             + "count is {}.")
-            .format(spec,
-                    cell_count,
-                    column_count))
+            f"Row specification {spec} has {cell_count} cell values "
+            + f"but the column count is {column_count}.")
 
     row = (r"{} & {} \\"
-           .format(escape_tex(spec.get("label", "")),
+           .format(escape_tex(spec.label or ""),
                    " & ".join(escape_tex(value)
                               for value in cell_values)))
 
@@ -397,7 +443,11 @@ def make_rows_for_row_spec(spec, column_count):
     return [row]
 
 
-def make_template(table_spec, json_filenames, title, label):
+def make_template(
+        table_spec: TableSpec,
+        json_filenames: List[str],
+        title: str | None,
+        label: str | None) -> str:
     column_count = get_column_count(table_spec) or len(json_filenames)
     add_table_env = title is not None or label is not None
 
@@ -423,38 +473,40 @@ def make_template(table_spec, json_filenames, title, label):
     # Add header.
     #
 
-    for cell in nested_get(table_spec, "header", "cell"):
-        lines.extend(
-            make_rows_for_cell_spec(cell, column_count))
+    if table_spec.header_spec is not None:
+        for cell in table_spec.header_spec.cell_specs:
+            lines.extend(
+                make_rows_for_cell_spec(cell, column_count))
 
-    for row in nested_get(table_spec, "header", "row"):
-        lines.extend(
-            make_rows_for_row_spec(row, column_count))
+        for row in table_spec.header_spec.row_specs:
+            lines.extend(
+                make_rows_for_row_spec(row, column_count))
 
     lines.append(r"\midrule")
 
     # Add body.
     #
 
-    for cell in nested_get(table_spec, "body", "cell"):
-        lines.extend(
-            make_rows_for_cell_spec(cell, column_count))
+    if table_spec.body_spec is not None:
+        for cell in table_spec.body_spec.cell_specs:
+            lines.extend(
+                make_rows_for_cell_spec(cell, column_count))
 
-    for row in nested_get(table_spec, "body", "row"):
-        lines.extend(
-            make_rows_for_row_spec(row, column_count))
+        for row in table_spec.body_spec.row_specs:
+            lines.extend(
+                make_rows_for_row_spec(row, column_count))
 
     # Add footer.
     #
 
-    if "footer" in table_spec:
+    if table_spec.footer_spec is not None:
         lines.append(r"\midrule")
 
-        for cell in nested_get(table_spec, "footer", "cell"):
+        for cell in table_spec.footer_spec.cell_specs:
             lines.extend(
                 make_rows_for_cell_spec(cell, column_count))
 
-        for row in nested_get(table_spec, "footer", "row"):
+        for row in table_spec.footer_spec.row_specs:
             lines.extend(
                 make_rows_for_row_spec(row, column_count))
 
@@ -476,8 +528,8 @@ def make_template(table_spec, json_filenames, title, label):
     return "\n".join(lines)
 
 
-def fill_template(template, json_dict):
-    def replace(match):
+def fill_template(template: str, json_dict: Dict) -> str:
+    def replace(match: re.Match) -> str:
         specifier = match.group(0)[len(match.group(1)):]
         key = match.group(2)
 
@@ -566,9 +618,9 @@ def main(json_filename, title=None, label=None, from_template=False,
         # Generate the template from the table specification on stdin.
         #
 
-        table_spec = toml.loads(sys.stdin.read())
+        table_spec = parse_toml(
+            toml.loads(sys.stdin.read()))
 
-        confirm_valid_specification(table_spec)
         confirm_consistent_column_count(table_spec, json_filename)
 
         template = make_template(

@@ -7,67 +7,6 @@ import toml
 from tomltable import tomltable as m
 
 
-class TestNestedGet(unittest.TestCase):
-    def test_existing_levels_with_dict_only(self):
-        obj_level_1 = {"a": 1, "b": 2}
-        obj_level_2 = {"a": {"c": 1, "d": 2}, "b": 3}
-        obj_level_3 = {"a": {"c": {"e": 1, "f": 2}, "d": 3}, "b": 4}
-
-        self.assertEqual(1, m.nested_get(obj_level_1, "a"))
-        self.assertEqual(2, m.nested_get(obj_level_2, "a", "d"))
-        self.assertEqual(1, m.nested_get(obj_level_3, "a", "c", "e"))
-
-    def test_existing_levels_with_list_only(self):
-        obj_level_1 = [1, 2]
-        obj_level_2 = [[1, 2], 3]
-        obj_level_3 = [[[1, 2], 3], 4]
-
-        self.assertEqual(1, m.nested_get(obj_level_1, 0))
-        self.assertEqual(2, m.nested_get(obj_level_2, 0, 1))
-        self.assertEqual(1, m.nested_get(obj_level_3, 0, 0, 0))
-
-    def test_existing_levels_with_both_dict_and_list(self):
-        obj = {"a": [{"b": 1}, {"b": 2}, {"b": 3}], "c": 4}
-
-        self.assertEqual(1, m.nested_get(obj, "a", 0, "b"))
-        self.assertEqual(2, m.nested_get(obj, "a", 1, "b"))
-
-    def test_missing_level_with_dict_only(self):
-        obj_level_1 = {"a": 1, "b": 2}
-        obj_level_2 = {"a": {"c": 1, "d": 2}, "b": 3}
-        obj_level_3 = {"a": {"c": {"e": 1, "f": 2}, "d": 3}, "b": 4}
-
-        self.assertEqual(dict(), m.nested_get(obj_level_1, "c"))
-
-        self.assertEqual(dict(), m.nested_get(obj_level_2, "c"))
-        self.assertEqual(dict(), m.nested_get(obj_level_2, "a", "e"))
-
-        self.assertEqual(dict(), m.nested_get(obj_level_3, "c"))
-        self.assertEqual(dict(), m.nested_get(obj_level_3, "a", "e"))
-        self.assertEqual(dict(), m.nested_get(obj_level_3, "a", "c", "g"))
-
-    def test_missing_level_with_list_only(self):
-        obj_level_1 = [1, 2]
-        obj_level_2 = [[1, 2], 3]
-        obj_level_3 = [[[1, 2], 3], 4]
-
-        self.assertEqual(dict(), m.nested_get(obj_level_1, 2))
-
-        self.assertEqual(dict(), m.nested_get(obj_level_2, 2))
-        self.assertEqual(dict(), m.nested_get(obj_level_2, 0, 2))
-
-        self.assertEqual(dict(), m.nested_get(obj_level_3, 2))
-        self.assertEqual(dict(), m.nested_get(obj_level_3, 0, 2))
-        self.assertEqual(dict(), m.nested_get(obj_level_3, 0, 0, 2))
-
-    def test_missing_level_with_both_dict_and_list(self):
-        obj = {"a": [{"b": 1}, {"b": 2}, {"b": 3}], "c": 4}
-
-        self.assertEqual(dict(), m.nested_get(obj, "d"))
-        self.assertEqual(dict(), m.nested_get(obj, "a", 3))
-        self.assertEqual(dict(), m.nested_get(obj, "a", 0, "d"))
-
-
 class TestAddThousandsSeparator(unittest.TestCase):
     def test_no_change_to_fractional_part(self):
         text = "foo 0.12345 bar"
@@ -192,14 +131,13 @@ cell = "YES"
                 continue
 
             try:
-                m.confirm_valid_specification(value)
+                m.parse_toml(value)
             except:
-                self.fail("confirm_valid_specification fails for {}."
-                          .format(attribute))
+                self.fail(f"parse_toml fails for {attribute}.")
 
     def test_only_tabular_if_no_title_and_no_label(self):
         result = m.make_template(
-            table_spec=dict(),
+            table_spec=m.TableSpec(),
             json_filenames=[],
             title=None,
             label=None)
@@ -213,7 +151,7 @@ cell = "YES"
                              ("foo", None),
                              ("foo", "bar")):
             result = m.make_template(
-                table_spec=dict(),
+                table_spec=m.TableSpec(),
                 json_filenames=[],
                 title=title,
                 label=label)
@@ -235,7 +173,8 @@ cell = "YES"
             1,
             get_column_count(
                 m.make_template(
-                    table_spec=self.spec_full_with_single_column,
+                    table_spec=m.parse_toml(
+                        self.spec_full_with_single_column),
                     json_filenames=["a"],
                     title=None,
                     label=None)))
@@ -246,7 +185,7 @@ cell = "YES"
                 4,
                 get_column_count(
                     m.make_template(
-                        table_spec=spec,
+                        table_spec=m.parse_toml(spec),
                         json_filenames=["a", "b", "c", "d"],
                         title=None,
                         label=None)))
@@ -257,7 +196,7 @@ cell = "YES"
                 3,
                 get_column_count(
                     m.make_template(
-                        table_spec=spec,
+                        table_spec=m.parse_toml(spec),
 
                         # NOTE In this test, we pass in a specification
                         # for three columns but a list of four JSON
@@ -307,7 +246,7 @@ cell = "YES"
                 (self.spec_full, ["a", "b", "c"]),
                 (self.spec_full_with_single_column, ["a"])):
             template = m.make_template(
-                table_spec=spec,
+                table_spec=m.parse_toml(spec),
                 json_filenames=json_filenames,
                 title=None,
                 label=None)
