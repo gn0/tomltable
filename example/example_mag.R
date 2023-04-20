@@ -1,5 +1,5 @@
-#install.packages("devtools")
-#devtools::install_git(url = "https://codeberg.org/gnyeki/jsonwriter")
+install.packages("devtools")
+devtools::install_git(url = "https://codeberg.org/gnyeki/jsonwriter")
 
 library(fixest)
 library(jsonwriter)
