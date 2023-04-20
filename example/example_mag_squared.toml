@@ -1,0 +1,21 @@
+[header]
+add-column-numbers = true
+
+[[header.row]]
+cell = ["Depth", "Depth"]
+
+[[body.cell]]
+label = "Magnitude"
+coef = "mag"
+
+[[body.cell]]
+label = "Magnitude squared"
+coef = "I(mag^2)"
+
+[[footer.cell]]
+label = "Observations"
+cell = "%(n::nobs)d"
+
+[[footer.cell]]
+label = "$R^2$"
+cell = "%(n::r_squared).03f"

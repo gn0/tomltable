@@ -1,0 +1,21 @@
+[header]
+add-column-numbers = true
+
+[[header.row]]
+cell = ["Depth", "Depth", "Depth"]
+
+[[body.cell]]
+label = "Magnitude"
+coef = "mag"
+
+[[footer.cell]]
+label = "Observations"
+cell = "%(n::nobs)d"
+
+[[footer.cell]]
+label = "$R^2$"
+cell = "%(n::r_squared).03f"
+
+[[footer.row]]
+label = "Sample"
+cell = ["full", 'stations $\leq 27$', "stations $> 27$"]

@@ -1,0 +1,1 @@
+{"call":"feols(fml = depth ~ mag, data = quakes[quakes$stations <= 27, ])","r_squared":0.10720986,"coef":{"(Intercept)":{"est":1623.4600949,"se":163.52627894,"t":9.92782387,"p":2.15416046e-21,"stars":"***"},"mag":{"est":-296.15042174,"se":37.40541201,"t":-7.91731479,"p":1.46798477e-14,"stars":"***"}},"nobs":524}
