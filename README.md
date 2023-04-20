@@ -32,7 +32,11 @@ $ python3 -m pip install --user ./tomltable
 
 ### Generating a regression table
 
-It is convenient to save regression results with [`jsonwriter`](https://codeberg.org/gnyeki/jsonwriter) or [`json_this`](https://github.com/gn0/json-this).
+We will generate the following template:
+
+<img src="https://codeberg.org/gnyeki/tomltable/raw/branch/main/example/preview_mag.png" alt="Preview of example_mag.tex" width="500" height="253" />
+
+To start with, it is convenient to save regression results with [`jsonwriter`](https://codeberg.org/gnyeki/jsonwriter) or [`json_this`](https://github.com/gn0/json-this).
 An example that uses the former in R:
 
 ```r
@@ -111,8 +115,6 @@ $ cat example_mag.toml \
     > example_mag.tex
 ```
 
-<img src="https://codeberg.org/gnyeki/tomltable/raw/branch/main/example/preview_mag.png" alt="Preview of example_mag.tex" width="500" height="253" />
-
 ### Only generating a template
 
 Use the `--only-table` option if you only want to generate the template, not the final table:
@@ -150,6 +152,15 @@ These options are only used for template generation.
 
 ### Generating a regression table with column-specific coefficients
 
+We will generate the following table:
+
+<img src="https://codeberg.org/gnyeki/tomltable/raw/branch/main/example/preview_mag_squared.png" alt="Preview of example_mag_squared.tex" width="450" height="292" />
+
+In the above table, the coefficient for _Magnitude squared_ is only present in column (2).
+Because it is missing in the JSON file for column (1), we will need to call `tomltable` with the `--ignore-missing-keys` option.
+
+To make the example complete, the following R script generates the results for column (2):
+
 ```r
 # example_mag_squared.R
 
@@ -162,6 +173,9 @@ write_json(
     feols(depth ~ mag + mag^2, quakes),
     "example_model_4.json")
 ```
+
+The TOML specification for the table is similar to before.
+The most notable difference is in the new `[[body.cell]]` block for _Magnitude squared:_
 
 ```toml
 # example_mag_squared.toml
@@ -189,6 +203,10 @@ label = "Observations"
 cell = "%(n::nobs)d"
 ```
 
+Running the R script and generating the table, `tomltable` gives us warning messages because _Magnitude squared_ missing for column (1).
+The missing elements in the table are simply omitted in the output, leaving some dangling text in the affected cells.
+To remove these, we use `sed`:
+
 ```
 $ Rscript example_mag_squared.R
 $ cat example_mag_sqaured.toml \
@@ -207,8 +225,6 @@ warning: Specifier '%(1::coef::I(mag^2)::est).03f' refers to key '1::coef::I(mag
 warning: Specifier '%(1::coef::I(mag^2)::stars)s' refers to key '1::coef::I(mag^2)::stars' but this key is not in the JSON object.
 warning: Specifier '%(1::coef::I(mag^2)::se).04f' refers to key '1::coef::I(mag^2)::se' but this key is not in the JSON object.
 ```
-
-<img src="https://codeberg.org/gnyeki/tomltable/raw/branch/main/example/preview_mag_squared.png" alt="Preview of example_mag_squared.tex" width="500" height="325" />
 
 ## Author
 
