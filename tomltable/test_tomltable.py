@@ -311,6 +311,7 @@ class TestFillTemplate(unittest.TestCase):
         self.json_dict = {
             "foo": "bar",
             "bar::baz": 3.14,
+            "foo::(bar)::baz": 2.72,
             "baz": None,
         }
 
@@ -396,6 +397,20 @@ class TestFillTemplate(unittest.TestCase):
             len(re.findall("^warning: ",
                            output.getvalue(),
                            flags=re.MULTILINE)))
+
+    def test_key_that_includes_parentheses(self):
+        template = "lorem ipsum %(foo::(bar)::baz).03f amet"
+        expected = "lorem ipsum 2.720 amet"
+
+        self.assertEqual(
+            expected, m.fill_template(template, self.json_dict))
+
+    def test_key_that_includes_parentheses_inside_parentheses(self):
+        template = "lorem ipsum (%(foo::(bar)::baz).03f) amet"
+        expected = "lorem ipsum (2.720) amet"
+
+        self.assertEqual(
+            expected, m.fill_template(template, self.json_dict))
 
     def test_raises_exception_for_missing_key(self):
         template = "lorem %(ipsum)s dolor sit amet"

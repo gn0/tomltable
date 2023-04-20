@@ -10,7 +10,7 @@ setup(
     author=u'Gabor Nyeki',
     url='https://www.gabornyeki.com/',
     packages=['tomltable'],
-    install_requires=['click', 'toml'],
+    install_requires=['click', 'regex', 'toml'],
     provides=['tomltable (1.1)'],
     entry_points={
         'console_scripts': [

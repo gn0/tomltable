@@ -1,5 +1,5 @@
 import sys
-import re
+import regex
 
 from typing import Dict, List
 
@@ -27,9 +27,15 @@ def escape_tex(value: str) -> str:
 
 
 def adapt_cell_value_to_column(value: str, column_number: int) -> str:
-    return re.sub(r"%\(n(::[^)]+\)[.0-9]*[dfs])",
-                  fr"%({column_number}\1",
-                  value)
+    return regex.sub(
+        (r"(?V1)(^|[^%])%"
+         + r"\(n::"
+         + r"(?P<pat>[^()]*|[^()]*\((?&pat)*\)[^()]*)" # Handle nested
+                                                       # parens.
+         + r"\)"
+         + r"([-# .0-9]*[dfs])"),
+        fr"\1%({column_number}::\2)\3",
+        value)
 
 
 def make_rows_for_cell_spec_custom(
@@ -223,9 +229,12 @@ def make_template(
 
 
 def fill_template(template: str, json_dict: Dict) -> str:
-    def replace(match: re.Match) -> str:
+    def replace(match: regex.Match) -> str:
         specifier = match.group(0)[len(match.group(1)):]
-        key = match.group(2)
+
+        # Drop surrounding parentheses.
+        #
+        key = match.group(2)[1:-1]
 
         if key not in json_dict:
             raise ValueError(
@@ -242,5 +251,10 @@ def fill_template(template: str, json_dict: Dict) -> str:
 
         return match.group(1) + replacement
 
-    return re.sub(
-        r"(^|[^%])%\(([^)]+)\)[-# .0-9]*[dfs]", replace, template)
+    return regex.sub(
+        (r"(?V1)(^|[^%])%"
+         + r"(?P<pat>\([^()]*(?&pat)*[^()]*\))" # Handle nested parens
+                                                # recursively.
+         + r"[-# .0-9]*[dfs]"),
+        replace,
+        template)
