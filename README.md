@@ -32,7 +32,7 @@ $ python3 -m pip install --user ./tomltable
 
 ### Generating a regression table
 
-We will generate the following template:
+We will generate the following table:
 
 <img src="https://codeberg.org/gnyeki/tomltable/raw/branch/main/example/preview_mag.png" alt="Preview of example_mag.tex" width="500" height="253" />
 
