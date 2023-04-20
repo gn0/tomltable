@@ -70,6 +70,9 @@ def add_thousands_separator(string: str) -> str:
               help=(r"Add label with the \label{} command. "
                     + "Implies use of the table and threeparttable "
                     + "environments."))
+@click.option("-i", "--ignore-missing-keys", is_flag=True,
+              help=("Ignore keys that are not present in the "
+                    + "corresponding JSON file."))
 @click.option("-F", "--from-template", is_flag=True,
               help=("Treat stdin as a template instead of a table "
                     + "specification."))
@@ -80,7 +83,8 @@ def add_thousands_separator(string: str) -> str:
               help=("Add commas as thousands separators to numbers in "
                     + "the final table."))
 @click.option("-d", "--debug", is_flag=True)
-def main(json_filename, title=None, label=None, from_template=False,
+def main(json_filename, title=None, label=None,
+         ignore_missing_keys=False, from_template=False,
          only_template=False, human_readable_numbers=False,
          debug=False):
     if not debug:
@@ -104,6 +108,11 @@ def main(json_filename, title=None, label=None, from_template=False,
                 "--from-template and --label cannot be used together.")
 
     if only_template:
+        if ignore_missing_keys:
+            raise ValueError(
+                "--only-template and --ignore-missing-keys cannot "
+                + "be used together.")
+
         if human_readable_numbers:
             raise ValueError(
                 "--only-template and --human-readable-numbers cannot "
@@ -140,7 +149,10 @@ def main(json_filename, title=None, label=None, from_template=False,
         json_files = list(load_json_file(filename)
                           for filename in json_filename)
 
-        result = fill_template(template, make_json_dict(json_files))
+        result = fill_template(
+            template,
+            make_json_dict(json_files),
+            ignore_missing_keys)
 
         if human_readable_numbers:
             result = add_thousands_separator(result)

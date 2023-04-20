@@ -228,7 +228,9 @@ def make_template(
     return "\n".join(lines)
 
 
-def fill_template(template: str, json_dict: Dict) -> str:
+def fill_template(template: str,
+                  json_dict: Dict,
+                  ignore_missing_keys: bool = False) -> str:
     def replace(match: regex.Match) -> str:
         specifier = match.group(0)[len(match.group(1)):]
 
@@ -237,15 +239,20 @@ def fill_template(template: str, json_dict: Dict) -> str:
         key = match.group(2)[1:-1]
 
         if key not in json_dict:
-            raise ValueError(
-                f"Specifier '{specifier}' refers to key '{key}' but "
-                + "this key is not in the JSON object.")
+            message = (f"Specifier '{specifier}' refers to key '{key}' "
+                       + "but this key is not in the JSON object.")
+
+            if ignore_missing_keys:
+                print(f"warning: {message}", file=sys.stderr)
+                return match.group(1)
+            else:
+                raise ValueError(message)
 
         try:
             replacement = specifier % json_dict
         except TypeError:
-            print("warning: '{}' has the wrong type for specifier '{}'."
-                  .format(json_dict[key], specifier),
+            print((f"warning: '{json_dict[key]}' has the wrong type "
+                   + f"for specifier '{specifier}'."),
                   file=sys.stderr)
             return match.group(1)
 
