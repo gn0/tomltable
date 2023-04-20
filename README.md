@@ -203,7 +203,7 @@ label = "Observations"
 cell = "%(n::nobs)d"
 ```
 
-Running the R script and generating the table, `tomltable` gives us warning messages because _Magnitude squared_ missing for column (1).
+Running the R script and generating the table, `tomltable` gives us warning messages because _Magnitude squared_ is missing for column (1).
 The missing elements in the table are simply omitted in the output, leaving some dangling text in the affected cells.
 To remove these, we use `sed`:
 
