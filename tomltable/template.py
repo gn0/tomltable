@@ -21,9 +21,7 @@ def get_column_count(table_spec: TableSpec) -> int | None:
 
 
 def escape_tex(value: str) -> str:
-    return (value
-            .replace("\\", "\\\\")
-            .replace("&", "\\&"))
+    return value.replace("&", "\\&")
 
 
 def adapt_cell_value_to_column(value: str, column_number: int) -> str:
