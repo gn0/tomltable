@@ -111,7 +111,7 @@ $ cat example_mag.toml \
     > example_mag.tex
 ```
 
-![Preview of `example_mag.tex`](https://codeberg.org/gnyeki/tomltable/raw/branch/main/example/preview_mag.png)
+<img src="https://codeberg.org/gnyeki/tomltable/raw/branch/main/example/preview_mag.png" alt="Preview of example_mag.tex" width="500" height="253" />
 
 ### Only generating a template
 
@@ -208,7 +208,7 @@ warning: Specifier '%(1::coef::I(mag^2)::stars)s' refers to key '1::coef::I(mag^
 warning: Specifier '%(1::coef::I(mag^2)::se).04f' refers to key '1::coef::I(mag^2)::se' but this key is not in the JSON object.
 ```
 
-![Preview of `example_mag_squared.tex`](https://codeberg.org/gnyeki/tomltable/raw/branch/main/example/preview_mag_squared.png)
+<img src="https://codeberg.org/gnyeki/tomltable/raw/branch/main/example/preview_mag_squared.png" alt="Preview of example_mag_squared.tex" width="500" height="325" />
 
 ## Author
 
