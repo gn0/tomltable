@@ -93,7 +93,7 @@ cell = "%(n::r_squared).03f"
 
 [[footer.row]]
 label = "Sample"
-cell = ["full", "stations $\leq 27$", "stations $> 27$"]
+cell = ["full", 'stations $\leq 27$', "stations $> 27$"]
 ```
 
 Now we can run the R script and generate the regression table with `tomltable`:
