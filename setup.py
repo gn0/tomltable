@@ -8,7 +8,7 @@ with open("README.md", "r", encoding="utf-8") as handle:
 
 setup(
     name="tomltable",
-    version="1.1.1",
+    version="1.1.2",
     description="command-line tool to generate TOML-defined regression tables from JSON data files",
     long_description=readme,
     long_description_content_type="text/markdown",
