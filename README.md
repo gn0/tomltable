@@ -130,6 +130,7 @@ $ cat example_mag.toml \
     | tomltable \
         -j example_model_1.json \
         -j example_model_2.json \
+        -j example_model_3.json \
         --title "Earthquake depth and magnitude" \
         --label tab:quakes \
         --only-template \
@@ -148,6 +149,7 @@ $ cat example_mag.tmpl \
     | tomltable \
         -j example_model_1.json \
         -j example_model_2.json \
+        -j example_model_3.json \
         --from-template \
         --human-readable-numbers \
     > example_mag.tex
@@ -215,7 +217,7 @@ To remove these, we use `sed`:
 
 ```
 $ Rscript example_mag_squared.R
-$ cat example_mag_sqaured.toml \
+$ cat example_mag_squared.toml \
     | tomltable \
         -j example_model_1.json \
         -j example_model_4.json \
@@ -231,6 +233,9 @@ warning: Specifier '%(1::coef::I(mag^2)::est).03f' refers to key '1::coef::I(mag
 warning: Specifier '%(1::coef::I(mag^2)::stars)s' refers to key '1::coef::I(mag^2)::stars' but this key is not in the JSON object.
 warning: Specifier '%(1::coef::I(mag^2)::se).04f' refers to key '1::coef::I(mag^2)::se' but this key is not in the JSON object.
 ```
+
+Notice that to generate this table, we only had to estimate one new regression specification, the one whose results we saved in `example_model_4.json` for column (2).
+For column (1), we reused the results that we already had in `example_model_1.json`.
 
 ## Author
 
