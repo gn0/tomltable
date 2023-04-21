@@ -15,7 +15,13 @@ The spiritual ancestor of this package is [`coeftable`](https://github.com/gn0/c
 
 ## Installation
 
-To install this package using pip, type either
+`tomltable` is available through PyPI so you can install it with `pip`:
+
+```
+$ python3 -m pip install tomltable
+```
+
+You can also install it directly from the Codeberg Git repository by typing either
 
 ```
 $ python3 -m pip install --user git+https://codeberg.org/gnyeki/tomltable
