@@ -8,7 +8,7 @@ This utility generates a LaTeX table from a TOML formatted table specification (
 However, its specification language also provides a convenience shortcut for regression tables.
 There are two related packages that save regression results in a structure that is compatible with `tomltable`:
 
-1. [`jsonwriter`](https://codeberg.org/gnyeki/jsonwriter) for R and
+1. [`jsonwriter`](https://github.com/gn0/jsonwriter) for R and
 2. [`json_this`](https://github.com/gn0/json-this) for Stata.
 
 The spiritual ancestor of this package is [`coeftable`](https://github.com/gn0/coeftable) which performed a similar task but without the TOML-based specification language.
@@ -24,13 +24,13 @@ $ python3 -m pip install tomltable
 You can also install it directly from the Codeberg Git repository by typing either
 
 ```
-$ python3 -m pip install --user git+https://codeberg.org/gnyeki/tomltable
+$ python3 -m pip install --user git+https://github.com/gn0/tomltable
 ```
 
 or
 
 ```
-$ git clone https://codeberg.org/gnyeki/tomltable
+$ git clone https://github.com/gn0/tomltable
 $ python3 -m pip install --user ./tomltable
 ```
 
@@ -40,16 +40,16 @@ $ python3 -m pip install --user ./tomltable
 
 We will generate the following table:
 
-<img src="https://codeberg.org/gnyeki/tomltable/raw/branch/main/example/preview_mag.png" alt="Preview of example_mag.tex" width="500" height="253" />
+<img src="https://raw.githubusercontent.com/gn0/tomltable/refs/heads/main/example/preview_mag.png" alt="Preview of example_mag.tex" width="500" height="253" />
 
-To start with, it is convenient to save regression results with [`jsonwriter`](https://codeberg.org/gnyeki/jsonwriter) or [`json_this`](https://github.com/gn0/json-this).
+To start with, it is convenient to save regression results with [`jsonwriter`](https://github.com/gn0/jsonwriter) or [`json_this`](https://github.com/gn0/json-this).
 An example that uses the former in R:
 
 ```r
 # example_mag.R
 
 install.packages("devtools")
-devtools::install_git(url = "https://codeberg.org/gnyeki/jsonwriter")
+devtools::install_git(url = "https://github.com/gn0/jsonwriter")
 
 library(fixest)
 library(jsonwriter)
@@ -162,7 +162,7 @@ These options are only used for template generation.
 
 We will generate the following table:
 
-<img src="https://codeberg.org/gnyeki/tomltable/raw/branch/main/example/preview_mag_squared.png" alt="Preview of example_mag_squared.tex" width="450" height="292" />
+<img src="https://raw.githubusercontent.com/gn0/tomltable/refs/heads/main/example/preview_mag_squared.png" alt="Preview of example_mag_squared.tex" width="450" height="292" />
 
 In the above table, the coefficient for _Magnitude squared_ is only present in column (2).
 Because it is missing in the JSON file for column (1), we will need to call `tomltable` with the `--ignore-missing-keys` option.
