@@ -141,7 +141,7 @@ def main(json_filename, title=None, label=None,
     #
 
     if only_template:
-        print(template)
+        print(template, end="")
     else:
         # Use the template to print the final table.
         #
@@ -157,7 +157,7 @@ def main(json_filename, title=None, label=None,
         if human_readable_numbers:
             result = add_thousands_separator(result)
 
-        print(result)
+        print(result, end="")
 
 
 if __name__ == "__main__":
