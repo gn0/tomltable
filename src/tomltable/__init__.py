@@ -2,7 +2,7 @@ import json
 import sys
 import re
 
-from typing import Any, Dict, Generator, List
+from typing import Any, Dict, Generator
 
 import click
 import toml
@@ -35,7 +35,7 @@ def traverse(obj: Any) -> Generator[tuple[str | None, Any], None, None]:
         yield None, obj
 
 
-def make_json_dict(json_files: List[str]) -> Dict:
+def make_json_dict(json_files: list[str]) -> Dict:
     return dict(traverse(json_files))
 
 

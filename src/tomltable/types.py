@@ -1,6 +1,5 @@
 import re
 
-from typing import List
 import dataclasses as dcls
 from dataclasses import dataclass
 
@@ -20,7 +19,7 @@ class TeXLength(str):
 @dataclass
 class CellSpec:
     label: str | None                = None
-    cell: List[str] | None           = None
+    cell: list[str] | None           = None
     coef: str | None                 = None
     padding_bottom: TeXLength | None = None
 
@@ -28,14 +27,14 @@ class CellSpec:
 @dataclass
 class RowSpec:
     label: str | None                = None
-    cell: List[str]                  = dcls.field(default_factory=lambda: [])
+    cell: list[str]                  = dcls.field(default_factory=lambda: [])
     padding_bottom: TeXLength | None = None
 
 
 @dataclass
 class OtherSectionSpec:
-    cell_specs: List[CellSpec] = dcls.field(default_factory=lambda: [])
-    row_specs: List[RowSpec]   = dcls.field(default_factory=lambda: [])
+    cell_specs: list[CellSpec] = dcls.field(default_factory=lambda: [])
+    row_specs: list[RowSpec]   = dcls.field(default_factory=lambda: [])
 
 
 @dataclass

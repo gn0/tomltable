@@ -1,7 +1,7 @@
 import sys
 import regex
 
-from typing import Dict, List
+from typing import Dict
 
 from tomltable.errors import TableSpecificationError
 from tomltable.types import TeXLength, CellSpec, RowSpec, TableSpec
@@ -38,7 +38,7 @@ def adapt_cell_value_to_column(value: str, column_number: int) -> str:
 
 def make_rows_for_cell_spec_custom(
         spec: CellSpec,
-        column_count: int) -> List[str]:
+        column_count: int) -> list[str]:
     cell_values = spec.cell or []
     padding_bottom = spec.padding_bottom
 
@@ -69,7 +69,7 @@ def make_rows_for_cell_spec_custom(
 
 def make_rows_for_cell_spec_regression(
         spec: CellSpec,
-        column_count: int) -> List[str]:
+        column_count: int) -> list[str]:
     coef = spec.coef
 
     cell_values = [
@@ -88,7 +88,7 @@ def make_rows_for_cell_spec_regression(
 
 def make_rows_for_cell_spec(
         spec: CellSpec,
-        column_count: int) -> List[str]:
+        column_count: int) -> list[str]:
     if spec.coef is not None:
         return make_rows_for_cell_spec_regression(spec, column_count)
 
@@ -105,7 +105,7 @@ def make_rows_for_cell_spec(
 
 def make_rows_for_row_spec(
         spec: RowSpec,
-        column_count: int) -> List[str]:
+        column_count: int) -> list[str]:
     cell_values = spec.cell
     padding_bottom = spec.padding_bottom
 
@@ -140,7 +140,7 @@ def make_row_for_column_numbers(column_count: int) -> str:
 
 def make_template(
         table_spec: TableSpec,
-        json_filenames: List[str],
+        json_filenames: list[str],
         title: str | None,
         label: str | None) -> str:
     column_count = get_column_count(table_spec) or len(json_filenames)

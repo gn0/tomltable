@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from tomltable.errors import TableSpecificationError
 from tomltable.types import (
@@ -44,7 +44,7 @@ def parse_toml_tex_length_field(value: Any,
             + f"it is '{value}' instead.") from error
 
 
-def parse_toml_field_cell(value: Any, parent_keys: str) -> List[str]:
+def parse_toml_field_cell(value: Any, parent_keys: str) -> list[str]:
     if isinstance(value, str):
         return [value]
 
@@ -208,7 +208,7 @@ def parse_toml(toml_spec: Dict) -> TableSpec:
 
 def confirm_consistent_column_count(
         table_spec: TableSpec,
-        json_filenames: List[str]) -> None:
+        json_filenames: list[str]) -> None:
     sections = ("header", "body", "footer")
 
     def get_and_confirm_counts(section):
