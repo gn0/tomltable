@@ -1,4 +1,4 @@
-VERSION = $(shell cat setup.py | grep '^ *version="' | cut -d'"' -f2)
+VERSION = $(shell grep '^version = "' pyproject.toml | cut -d'"' -f2)
 
 TARGETS := dist/tomltable-$(VERSION)-py3-none-any.whl
 TARGETS += dist/tomltable-$(VERSION).tar.gz
@@ -7,10 +7,10 @@ TARGETS += dist/tomltable-$(VERSION).tar.gz
 build: $(TARGETS)
 
 dist/tomltable-%-py3-none-any.whl:
-	python3 -m build .
+	uv build --wheel .
 
 dist/tomltable-%.tar.gz:
-	python3 -m build --wheel .
+	uv build --sdist .
 
 .PHONY: upload
 upload: $(TARGETS)

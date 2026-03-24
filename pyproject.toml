@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tomltable"
+version = "1.2.0"
+description = "command-line tool to generate TOML-defined regression tables from JSON data files"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "click>=8.3.1",
+    "regex>=2026.2.28",
+    "toml>=0.10.2",
+]
+
+[project.scripts]
+tomltable = "tomltable:main"
+
+[project.urls]
+Homepage = "https://github.com/gn0/tomltable"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-cov>=7.1.0",
+]
