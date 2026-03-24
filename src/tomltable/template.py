@@ -230,9 +230,12 @@ def make_template(
     return "\n".join(lines)
 
 
-def fill_template(template: str,
-                  json_dict: dict,
-                  ignore_missing_keys: bool = False) -> str:
+def fill_template(
+    template: str,
+    json_dict: dict,
+    *,
+    ignore_missing_keys: bool = False,
+) -> str:
     def replace(match: regex.Match) -> str:
         specifier = match.group(0)[len(match.group(1)):]
 

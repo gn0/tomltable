@@ -96,10 +96,17 @@ def add_thousands_separator(string: str) -> str:
                   "the final table."
               ))
 @click.option("-d", "--debug", is_flag=True)
-def main(json_filename, title=None, label=None,
-         ignore_missing_keys=False, from_template=False,
-         only_template=False, human_readable_numbers=False,
-         debug=False):
+def main(
+    json_filename: str,
+    title: str | None,
+    label: str | None,
+    *,
+    ignore_missing_keys: bool = False,
+    from_template: bool = False,
+    only_template: bool = False,
+    human_readable_numbers: bool = False,
+    debug: bool = False,
+) -> None:
     if not debug:
         sys.tracebacklimit = 0
 
