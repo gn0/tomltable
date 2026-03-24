@@ -47,10 +47,7 @@ def make_rows_for_cell_spec_custom(
     rows = []
 
     for cell_index, cell_value in enumerate(cell_values):
-        if cell_index == 0:
-            row = escape_tex(spec.label or "")
-        else:
-            row = ""
+        row = "" if cell_index > 0 else escape_tex(spec.label or "")
 
         for column_number in range(1, column_count + 1):
             value = adapt_cell_value_to_column(
