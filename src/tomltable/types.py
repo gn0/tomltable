@@ -26,14 +26,14 @@ class CellSpec:
 @dataclass
 class RowSpec:
     label: str | None                = None
-    cell: list[str]                  = dcls.field(default_factory=lambda: [])
+    cell: list[str]                  = dcls.field(default=[])
     padding_bottom: TeXLength | None = None
 
 
 @dataclass
 class OtherSectionSpec:
-    cell_specs: list[CellSpec] = dcls.field(default_factory=lambda: [])
-    row_specs: list[RowSpec]   = dcls.field(default_factory=lambda: [])
+    cell_specs: list[CellSpec] = dcls.field(default=[])
+    row_specs: list[RowSpec]   = dcls.field(default=[])
 
 
 @dataclass
@@ -43,6 +43,6 @@ class HeaderSpec(OtherSectionSpec):
 
 @dataclass
 class TableSpec:
-    header_spec: HeaderSpec       = dcls.field(default_factory=lambda: HeaderSpec())
-    body_spec: OtherSectionSpec   = dcls.field(default_factory=lambda: OtherSectionSpec())
-    footer_spec: OtherSectionSpec = dcls.field(default_factory=lambda: OtherSectionSpec())
+    header_spec: HeaderSpec       = dcls.field(default_factory=HeaderSpec)
+    body_spec: OtherSectionSpec   = dcls.field(default_factory=OtherSectionSpec)
+    footer_spec: OtherSectionSpec = dcls.field(default_factory=OtherSectionSpec)
