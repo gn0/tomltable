@@ -12,6 +12,14 @@ dist/tomltable-%-py3-none-any.whl:
 dist/tomltable-%.tar.gz:
 	uv build --sdist .
 
+.PHONY: test
+test:
+	uv run pytest -v --cov=src
+
 .PHONY: upload
 upload: $(TARGETS)
 	python3 -m twine upload $^
+
+.PHONY: clean
+clean:
+	-rm -rf dist/
