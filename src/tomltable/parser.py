@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 from tomltable.errors import TableSpecificationError
 from tomltable.types import (
@@ -73,7 +73,7 @@ def parse_toml_field_cell(value: Any, parent_keys: str) -> list[str]:
         + f"'{type(value).__name__}' instead.")
 
 
-def parse_toml_cell_spec(obj: Dict, parent_key: str) -> CellSpec:
+def parse_toml_cell_spec(obj: dict, parent_key: str) -> CellSpec:
     result = CellSpec()
 
     for key, value in obj.items():
@@ -106,7 +106,7 @@ def parse_toml_cell_spec(obj: Dict, parent_key: str) -> CellSpec:
     return result
 
 
-def parse_toml_row_spec(obj: Dict, parent_key: str) -> RowSpec:
+def parse_toml_row_spec(obj: dict, parent_key: str) -> RowSpec:
     result = RowSpec()
     cell = None
 
@@ -133,7 +133,7 @@ def parse_toml_row_spec(obj: Dict, parent_key: str) -> RowSpec:
     return result
 
 
-def parse_toml_header(obj: Dict) -> HeaderSpec:
+def parse_toml_header(obj: dict) -> HeaderSpec:
     result = HeaderSpec()
 
     for key, value in obj.items():
@@ -162,7 +162,7 @@ def parse_toml_header(obj: Dict) -> HeaderSpec:
     return result
 
 
-def parse_toml_other_section(obj: Dict,
+def parse_toml_other_section(obj: dict,
                              parent_key: str) -> OtherSectionSpec:
     result = OtherSectionSpec()
 
@@ -188,7 +188,7 @@ def parse_toml_other_section(obj: Dict,
     return result
 
 
-def parse_toml(toml_spec: Dict) -> TableSpec:
+def parse_toml(toml_spec: dict) -> TableSpec:
     result = TableSpec()
 
     for key, value in toml_spec.items():

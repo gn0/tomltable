@@ -2,7 +2,7 @@ import json
 import sys
 import re
 
-from typing import Any, Dict, Generator
+from typing import Any, Generator
 
 import click
 import toml
@@ -11,7 +11,7 @@ from tomltable.parser import confirm_consistent_column_count, parse_toml
 from tomltable.template import make_template, fill_template
 
 
-def load_json_file(filename: str) -> Dict:
+def load_json_file(filename: str) -> dict:
     with open(filename, "r") as json_file:
         return json.load(json_file)
 
@@ -35,7 +35,7 @@ def traverse(obj: Any) -> Generator[tuple[str | None, Any], None, None]:
         yield None, obj
 
 
-def make_json_dict(json_files: list[str]) -> Dict:
+def make_json_dict(json_files: list[str]) -> dict:
     return dict(traverse(json_files))
 
 

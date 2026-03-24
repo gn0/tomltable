@@ -1,8 +1,6 @@
 import sys
 import regex
 
-from typing import Dict
-
 from tomltable.errors import TableSpecificationError
 from tomltable.types import TeXLength, CellSpec, RowSpec, TableSpec
 
@@ -227,7 +225,7 @@ def make_template(
 
 
 def fill_template(template: str,
-                  json_dict: Dict,
+                  json_dict: dict,
                   ignore_missing_keys: bool = False) -> str:
     def replace(match: regex.Match) -> str:
         specifier = match.group(0)[len(match.group(1)):]
