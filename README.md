@@ -21,7 +21,7 @@ The spiritual ancestor of this package is [`coeftable`](https://github.com/gn0/c
 $ python3 -m pip install tomltable
 ```
 
-You can also install it directly from the Codeberg Git repository by typing either
+You can also install it directly from the GitHub Git repository by typing either
 
 ```
 $ python3 -m pip install --user git+https://github.com/gn0/tomltable
