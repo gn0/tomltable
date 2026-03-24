@@ -2,7 +2,9 @@ import json
 import sys
 import re
 
-from typing import Any, Generator
+from typing import Any
+
+from collections.abc import Generator
 
 import click
 import toml
