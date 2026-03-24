@@ -165,8 +165,9 @@ def main(json_filename, title=None, label=None,
         # Use the template to print the final table.
         #
 
-        json_files = list(load_json_file(filename)
-                          for filename in json_filename)
+        json_files = [
+            load_json_file(filename) for filename in json_filename
+        ]
 
         result = fill_template(
             template,

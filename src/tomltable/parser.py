@@ -242,11 +242,14 @@ def confirm_consistent_column_count(
     sections = ("header", "body", "footer")
 
     def get_and_confirm_counts(section):
-        counts_in_section = list(
+        counts_in_section = [
             len(row.cell)
-            for row in (getattr(table_spec, f"{section}_spec")
-                        .row_specs)
-            if row.cell is not None)
+            for row in (
+                getattr(table_spec, f"{section}_spec")
+                .row_specs
+            )
+            if row.cell is not None
+        ]
 
         if (len(counts_in_section) > 1
             and not all(value == counts_in_section[0]
