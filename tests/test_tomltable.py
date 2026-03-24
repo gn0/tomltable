@@ -21,8 +21,10 @@ class TestAddThousandsSeparator(unittest.TestCase):
 
     def test_commas_added_to_whole_part_if_at_least_four_digits(self):
         text = "foo 1000.12345 10000.12345 100000.12345 1000000.12345 bar"
-        expected = ("foo 1,000.12345 10,000.12345 100,000.12345 "
-                    + "1,000,000.12345 bar")
+        expected = (
+            "foo 1,000.12345 10,000.12345 100,000.12345 "
+            "1,000,000.12345 bar"
+        )
 
         self.assertEqual(expected, m.add_thousands_separator(text))
 
@@ -377,8 +379,9 @@ class TestFillTemplate(unittest.TestCase):
                            flags=re.MULTILINE)))
 
     def test_float_conversion_specifiers_with_flags(self):
-        template = ("lorem %(foo).03f dolor %(bar::baz).03f amet "
-                    + "%(baz).03f")
+        template = (
+            "lorem %(foo).03f dolor %(bar::baz).03f amet %(baz).03f"
+        )
         expected = "lorem  dolor 3.140 amet "
 
         output = io.StringIO()

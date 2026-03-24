@@ -24,12 +24,14 @@ def escape_tex(value: str) -> str:
 
 def adapt_cell_value_to_column(value: str, column_number: int) -> str:
     return regex.sub(
-        (r"(?V1)(^|[^%])%"
-         + r"\(n::"
-         + r"(?P<pat>[^()]*|[^()]*\((?&pat)*\)[^()]*)" # Handle nested
-                                                       # parens.
-         + r"\)"
-         + r"([-# .0-9]*[dfs])"),
+        (
+            r"(?V1)(^|[^%])%"
+            r"\(n::"
+            r"(?P<pat>[^()]*|[^()]*\((?&pat)*\)[^()]*)" # Handle nested
+                                                        # parens.
+            r"\)"
+            r"([-# .0-9]*[dfs])"
+        ),
         fr"\1%({column_number}::\2)\3",
         value)
 
@@ -71,8 +73,10 @@ def make_rows_for_cell_spec_regression(
     coef = spec.coef
 
     cell_values = [
-        (f"$%(n::coef::{coef}::est).03f$"
-         + f"%(n::coef::{coef}::stars)s"),
+        (
+            f"$%(n::coef::{coef}::est).03f$"
+            f"%(n::coef::{coef}::stars)s"
+        ),
         f"(%(n::coef::{coef}::se).04f)"
     ]
 
@@ -155,9 +159,11 @@ def make_template(
         lines.append(r"\begin{table}[!htb]")
         lines.append(
             r"\begin{adjustbox}{"
-            + r"max width=\textwidth, "
-            + r"max height=\textheight, "
-            + "center}")
+            r"max width=\textwidth, "
+            r"max height=\textheight, "
+            "center"
+            "}"
+        )
         lines.append(r"\begin{threeparttable}")
         lines.append(r"\centering")
         lines.append(r"\caption{%s}" % (title or ""))
@@ -251,17 +257,21 @@ def fill_template(template: str,
         try:
             replacement = specifier % json_dict
         except TypeError:
-            print((f"warning: '{json_dict[key]}' has the wrong type "
-                   + f"for specifier '{specifier}'."),
-                  file=sys.stderr)
+            print(
+                f"warning: '{json_dict[key]}' has the wrong type "
+                f"for specifier '{specifier}'.",
+                file=sys.stderr,
+            )
             return match.group(1)
 
         return match.group(1) + replacement
 
     return regex.sub(
-        (r"(?V1)(^|[^%])%"
-         + r"(?P<pat>\([^()]*(?&pat)*[^()]*\))" # Handle nested parens
-                                                # recursively.
-         + r"[-# .0-9]*[dfs]"),
+        (
+            r"(?V1)(^|[^%])%"
+            r"(?P<pat>\([^()]*(?&pat)*[^()]*\))" # Handle nested parens
+                                                 # recursively.
+            r"[-# .0-9]*[dfs]"
+        ),
         replace,
         template)

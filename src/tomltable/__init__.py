@@ -54,34 +54,47 @@ def add_thousands_separator(string: str) -> str:
     return re.sub(r"(^|[^.0-9])([0-9]+)", replace, string)
 
 
-@click.command(help=("Generate a LaTeX table from a TOML formatted "
-                     + "table specification (read from stdin) and "
-                     + "a set of JSON files (specified as arguments)."))
+@click.command(help=(
+    "Generate a LaTeX table from a TOML formatted table specification "
+    "(read from stdin) and a set of JSON files (specified as "
+    "arguments)."
+))
 @click.option("-j", "--json-filename",
               required=True, type=str, multiple=True,
-              help=("JSON file to use as input to the table. "
-                    + "In a regression table, each JSON file would "
-                    + "most likely correspond to a separate column."))
+              help=(
+                  "JSON file to use as input to the table. In a "
+                  "regression table, each JSON file would most likely "
+                  "correspond to a separate column."
+              ))
 @click.option("-t", "--title", required=False, type=str,
-              help=(r"Add title with the \caption{} command. "
-                    + "Implies use of the table and threeparttable "
-                    + "environments."))
+              help=(
+                  r"Add title with the \caption{} command. Implies use "
+                  "of the table and threeparttable environments."
+              ))
 @click.option("-l", "--label", required=False, type=str,
-              help=(r"Add label with the \label{} command. "
-                    + "Implies use of the table and threeparttable "
-                    + "environments."))
+              help=(
+                  r"Add label with the \label{} command. Implies use "
+                  "of the table and threeparttable environments."
+              ))
 @click.option("-i", "--ignore-missing-keys", is_flag=True,
-              help=("Ignore keys that are not present in the "
-                    + "corresponding JSON file."))
+              help=(
+                  "Ignore keys that are not present in the "
+                  "corresponding JSON file."
+              ))
 @click.option("-F", "--from-template", is_flag=True,
-              help=("Treat stdin as a template instead of a table "
-                    + "specification."))
+              help=(
+                  "Treat stdin as a template instead of a table "
+                  "specification."
+              ))
 @click.option("-T", "--only-template", is_flag=True,
-              help=("Print template instead of the final table to "
-                    + "stdout."))
+              help=(
+                  "Print template instead of the final table to stdout."
+              ))
 @click.option("-H", "--human-readable-numbers", is_flag=True,
-              help=("Add commas as thousands separators to numbers in "
-                    + "the final table."))
+              help=(
+                  "Add commas as thousands separators to numbers in "
+                  "the final table."
+              ))
 @click.option("-d", "--debug", is_flag=True)
 def main(json_filename, title=None, label=None,
          ignore_missing_keys=False, from_template=False,
