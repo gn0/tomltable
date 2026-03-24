@@ -16,9 +16,11 @@ def parse_toml_string_field(value: Any,
     if isinstance(value, str):
         return value
 
-    raise TableSpecificationError(
+    msg = (
         f"Value for field '{field_name}' in '{parent_keys}' should be "
-        + f"a string but it has type '{type(value).__name__}' instead.")
+        f"a string but it has type '{type(value).__name__}' instead."
+    )
+    raise TableSpecificationError(msg)
 
 
 def parse_toml_bool_field(value: Any,
@@ -27,9 +29,11 @@ def parse_toml_bool_field(value: Any,
     if isinstance(value, bool):
         return value
 
-    raise TableSpecificationError(
+    msg = (
         f"Value for field '{field_name}' in '{parent_keys}' should be "
-        + f"either 'true' or 'false' but it is '{value}' instead.")
+        f"either 'true' or 'false' but it is '{value}' instead."
+    )
+    raise TableSpecificationError(msg)
 
 
 def parse_toml_tex_length_field(value: Any,
@@ -38,10 +42,12 @@ def parse_toml_tex_length_field(value: Any,
     try:
         return TeXLength(value)
     except ValueError as error:
-        raise TableSpecificationError(
+        msg = (
             f"Value for field '{field_name}' in '{parent_keys}' should "
-            + "be a string with a valid TeX length specification but "
-            + f"it is '{value}' instead.") from error
+            "be a string with a valid TeX length specification but it "
+            f"is '{value}' instead."
+        )
+        raise TableSpecificationError(msg) from error
 
 
 def parse_toml_field_cell(value: Any, parent_keys: str) -> list[str]:
@@ -50,27 +56,32 @@ def parse_toml_field_cell(value: Any, parent_keys: str) -> list[str]:
 
     if isinstance(value, list):
         if len(value) == 0:
-            raise TableSpecificationError(
+            msg = (
                 f"Value for field 'cell' in '{parent_keys}' should be "
-                + "a string or a list of strings but it is an empty "
-                + "list instead.")
+                "a string or a list of strings but it is an empty list "
+                "instead."
+            )
+            raise TableSpecificationError(msg)
 
         if not isinstance(value[0], str):
             # NOTE It is enough to check the type of the first element.
             # `toml.loads` enforces homogeneity within the list.
             #
-            raise TableSpecificationError(
+            msg = (
                 f"Value for field 'cell' in '{parent_keys}' should be "
-                + "a string or a list of strings but it is a list of "
-                + f"values of type '{type(value[0]).__name__}' "
-                + "instead.")
+                "a string or a list of strings but it is a list of "
+                f"values of type '{type(value[0]).__name__}' instead."
+            )
+            raise TableSpecificationError(msg)
 
         return value
 
-    raise TableSpecificationError(
+    msg = (
         f"Value for field 'cell' in '{parent_keys}' should be a string "
-        + "or a list of strings but it has type "
-        + f"'{type(value).__name__}' instead.")
+        "or a list of strings but it has type "
+        f"'{type(value).__name__}' instead."
+    )
+    raise TableSpecificationError(msg)
 
 
 def parse_toml_cell_spec(obj: dict, parent_key: str) -> CellSpec:
@@ -89,19 +100,25 @@ def parse_toml_cell_spec(obj: dict, parent_key: str) -> CellSpec:
             result.padding_bottom = parse_toml_tex_length_field(
                 value, key, f"{parent_key}.cell")
         else:
-            raise TableSpecificationError(
-                f"Field '{key}' for '{parent_key}.cell' "
-                + "is not 'label', 'cell', or 'padding-bottom'.")
+            msg = (
+                f"Field '{key}' for '{parent_key}.cell' is not "
+                "'label', 'cell', or 'padding-bottom'."
+            )
+            raise TableSpecificationError(msg)
 
     if result.cell is None and result.coef is None:
-        raise TableSpecificationError(
-            "Must specify either field 'cell' or field 'coef' "
-            + f"for '{parent_key}.cell'.")
+        msg = (
+            "Must specify either field 'cell' or field 'coef' for "
+            f"'{parent_key}.cell'."
+        )
+        raise TableSpecificationError(msg)
 
     if result.cell is not None and result.coef is not None:
-        raise TableSpecificationError(
+        msg = (
             "Cannot specify both field 'cell' and field 'coef' for "
-            + f"'{parent_key}.cell'.")
+            f"'{parent_key}.cell'."
+        )
+        raise TableSpecificationError(msg)
 
     return result
 
@@ -120,13 +137,15 @@ def parse_toml_row_spec(obj: dict, parent_key: str) -> RowSpec:
             result.padding_bottom = parse_toml_tex_length_field(
                 value, key, f"{parent_key}.row")
         else:
-            raise TableSpecificationError(
-                f"Field '{key}' for '{parent_key}.row' "
-                + "is not 'label', 'cell', or 'padding-bottom'.")
+            msg = (
+                f"Field '{key}' for '{parent_key}.row' is not 'label', "
+                "'cell', or 'padding-bottom'."
+            )
+            raise TableSpecificationError(msg)
 
     if cell is None:
-        raise TableSpecificationError(
-            f"Must specify field 'cell' for '{parent_key}.row'.")
+        msg = f"Must specify field 'cell' for '{parent_key}.row'."
+        raise TableSpecificationError(msg)
 
     result.cell = cell
 
@@ -140,9 +159,11 @@ def parse_toml_header(obj: dict) -> HeaderSpec:
         if (key in ("cell", "row")
             and (not isinstance(value, list)
                  or any(not isinstance(x, dict) for x in value))):
-            raise TableSpecificationError(
-                f"Value for 'header.{key}' should be a list "
-                + "of dictionaries.")
+            msg = (
+                f"Value for 'header.{key}' should be a list of "
+                "dictionaries."
+            )
+            raise TableSpecificationError(msg)
 
         if key == "add-column-numbers":
             result.add_column_numbers = parse_toml_bool_field(
@@ -154,10 +175,12 @@ def parse_toml_header(obj: dict) -> HeaderSpec:
             result.row_specs = [parse_toml_row_spec(x, "header")
                                 for x in value]
         else:
-            raise TableSpecificationError(
+            msg = (
                 "Second-level key for 'header' should be 'cell', "
-                + f"'row', or 'add-column-numbers' but it is '{key}' "
-                + "instead.")
+                f"'row', or 'add-column-numbers' but it is '{key}' "
+                "instead."
+            )
+            raise TableSpecificationError(msg)
 
     return result
 
@@ -170,9 +193,11 @@ def parse_toml_other_section(obj: dict,
         if (key in ("cell", "row")
             and (not isinstance(value, list)
                  or any(not isinstance(x, dict) for x in value))):
-            raise TableSpecificationError(
-                f"Value for 'header.{key}' should be a list "
-                + "of dictionaries.")
+            msg = (
+                f"Value for 'header.{key}' should be a list of "
+                "dictionaries."
+            )
+            raise TableSpecificationError(msg)
 
         if key == "cell":
             result.cell_specs = [parse_toml_cell_spec(x, parent_key)
@@ -181,9 +206,11 @@ def parse_toml_other_section(obj: dict,
             result.row_specs = [parse_toml_row_spec(x, parent_key)
                                 for x in value]
         else:
-            raise TableSpecificationError(
+            msg = (
                 f"Second-level key for '{parent_key}' should be 'cell' "
-                + f"or 'row' but it is '{key}' instead.")
+                f"or 'row' but it is '{key}' instead."
+            )
+            raise TableSpecificationError(msg)
 
     return result
 
@@ -199,9 +226,11 @@ def parse_toml(toml_spec: dict) -> TableSpec:
                     f"{key}_spec",
                     parse_toml_other_section(value, key))
         else:
-            raise TableSpecificationError(
-                "Section should be 'header', 'body', or 'footer' "
-                + f"but it is '{key}' instead.")
+            msg = (
+                "Section should be 'header', 'body', or 'footer' but "
+                f"it is '{key}' instead."
+            )
+            raise TableSpecificationError(msg)
 
     return result
 
@@ -221,9 +250,11 @@ def confirm_consistent_column_count(
         if (len(counts_in_section) > 1
             and not all(value == counts_in_section[0]
                         for value in counts_in_section)):
-            raise TableSpecificationError(
+            msg = (
                 f"Inconsistent column counts in the {section}: "
-                + f"{counts_in_section}.")
+                f"{counts_in_section}."
+            )
+            raise TableSpecificationError(msg)
 
         return counts_in_section
 
@@ -247,9 +278,11 @@ def confirm_consistent_column_count(
             count_b = counts[section_b][0]
 
             if count_a != count_b:
-                raise TableSpecificationError(
+                msg = (
                     f"Inconsistent column counts: {count_a} in "
-                    + f"{section_a} but {count_b} in {section_b}.")
+                    f"{section_a} but {count_b} in {section_b}."
+                )
+                raise TableSpecificationError(msg)
 
     # Confirm consistency between the specification and the JSON files.
     #
@@ -266,11 +299,12 @@ def confirm_consistent_column_count(
             plural_section = "s" if count_section > 1 else ""
             plural_json = "s" if count_json > 1 else ""
 
-            raise Exception(
-                "Inconsistency between the table specification and "
-                + f"the command-line arguments: {count_section} "
-                + f"column{plural_section} in the specification but "
-                + f"{count_json} JSON file{plural_json} in the "
-                + "arguments.")
+            msg = (
+                "Inconsistency between the table specification and the "
+                f"command-line arguments: {count_section} "
+                f"column{plural_section} in the specification but "
+                f"{count_json} JSON file{plural_json} in the arguments."
+            )
+            raise Exception(msg)
 
         break

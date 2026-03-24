@@ -97,8 +97,8 @@ def make_rows_for_cell_spec(
     # 'coef' and 'cell' is specified.  So if we reach here, we have a
     # bug in the parser.
     #
-    raise TableSpecificationError(
-        f"Cell specification {spec} gives neither 'coef' nor 'cell'.")
+    msg = f"Cell specification {spec} gives neither 'coef' nor 'cell'."
+    raise TableSpecificationError(msg)
 
 
 def make_rows_for_row_spec(
@@ -114,9 +114,11 @@ def make_rows_for_row_spec(
         # cell count equals the column count.  So if we reach here, we
         # have a bug.
         #
-        raise TableSpecificationError(
+        msg = (
             f"Row specification {spec} has {cell_count} cell values "
-            + f"but the column count is {column_count}.")
+            f"but the column count is {column_count}."
+        )
+        raise TableSpecificationError(msg)
 
     row = (r"{} & {} \\"
            .format(escape_tex(spec.label or ""),
@@ -235,14 +237,16 @@ def fill_template(template: str,
         key = match.group(2)[1:-1]
 
         if key not in json_dict:
-            message = (f"Specifier '{specifier}' refers to key '{key}' "
-                       + "but this key is not in the JSON object.")
+            msg = (
+                f"Specifier '{specifier}' refers to key '{key}' but "
+                "this key is not in the JSON object."
+            )
 
             if ignore_missing_keys:
-                print(f"warning: {message}", file=sys.stderr)
+                print(f"warning: {msg}", file=sys.stderr)
                 return match.group(1)
             else:
-                raise ValueError(message)
+                raise ValueError(msg)
 
         try:
             replacement = specifier % json_dict

@@ -94,29 +94,35 @@ def main(json_filename, title=None, label=None,
     #
 
     if from_template and only_template:
-        raise ValueError(
+        msg = (
             "--from-template and --only-template cannot be used "
-            + "together.")
+            "together."
+        )
+        raise ValueError(msg)
 
     if from_template:
         if title is not None:
-            raise ValueError(
-                "--from-template and --title cannot be used together.")
+            msg = "--from-template and --title cannot be used together."
+            raise ValueError(msg)
 
         if label is not None:
-            raise ValueError(
-                "--from-template and --label cannot be used together.")
+            msg = "--from-template and --label cannot be used together."
+            raise ValueError(msg)
 
     if only_template:
         if ignore_missing_keys:
-            raise ValueError(
-                "--only-template and --ignore-missing-keys cannot "
-                + "be used together.")
+            msg = (
+                "--only-template and --ignore-missing-keys cannot be "
+                "used together."
+            )
+            raise ValueError(msg)
 
         if human_readable_numbers:
-            raise ValueError(
+            msg = (
                 "--only-template and --human-readable-numbers cannot "
-                + "be used together.")
+                "be used together."
+            )
+            raise ValueError(msg)
 
     # Load or generate the template.
     #

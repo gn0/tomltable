@@ -10,8 +10,8 @@ class TeXLength(str):
             or re.match(
                 "^(-?[0-9]*[.])?[0-9]+(pt|mm|cm|in|ex|em|mu|sp)$",
                 value) is None):
-            raise ValueError(
-                f"'{value}' is not a valid TeX length specification.")
+            msg = f"'{value}' is not a valid TeX length specification."
+            raise ValueError(msg)
 
         return super().__new__(cls, value)
 
