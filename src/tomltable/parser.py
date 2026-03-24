@@ -2,12 +2,13 @@ from typing import Any
 
 from tomltable.errors import TableSpecificationError
 from tomltable.types import (
-    TeXLength,
     CellSpec,
-    RowSpec,
-    OtherSectionSpec,
     HeaderSpec,
-    TableSpec)
+    OtherSectionSpec,
+    RowSpec,
+    TableSpec,
+    TeXLength,
+)
 
 
 def parse_toml_string_field(value: Any,

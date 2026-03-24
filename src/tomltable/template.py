@@ -1,8 +1,9 @@
 import sys
+
 import regex
 
 from tomltable.errors import TableSpecificationError
-from tomltable.types import TeXLength, CellSpec, RowSpec, TableSpec
+from tomltable.types import CellSpec, RowSpec, TableSpec, TeXLength
 
 
 def get_column_count(table_spec: TableSpec) -> int | None:

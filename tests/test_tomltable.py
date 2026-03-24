@@ -1,7 +1,8 @@
-import unittest
-import re
-import io
 import contextlib
+import io
+import re
+import unittest
+
 import toml
 
 import tomltable as m

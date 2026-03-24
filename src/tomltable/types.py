@@ -1,6 +1,5 @@
-import re
-
 import dataclasses as dcls
+import re
 from dataclasses import dataclass
 
 

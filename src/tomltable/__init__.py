@@ -1,16 +1,14 @@
 import json
-import sys
 import re
-
-from typing import Any
-
+import sys
 from collections.abc import Generator
+from typing import Any
 
 import click
 import toml
 
 from tomltable.parser import confirm_consistent_column_count, parse_toml
-from tomltable.template import make_template, fill_template
+from tomltable.template import fill_template, make_template
 
 
 def load_json_file(filename: str) -> dict:
