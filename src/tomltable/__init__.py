@@ -161,7 +161,8 @@ def main(
         confirm_consistent_column_count(table_spec, [json_filename])
 
         template = make_template(
-            table_spec, [json_filename], title, label)
+            table_spec, [json_filename], title, label,
+        )
 
     # Use the template.
     #
@@ -179,7 +180,8 @@ def main(
         result = fill_template(
             template,
             make_json_dict(json_files),
-            ignore_missing_keys=ignore_missing_keys)
+            ignore_missing_keys=ignore_missing_keys,
+        )
 
         if human_readable_numbers:
             result = add_thousands_separator(result)

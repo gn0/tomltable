@@ -163,7 +163,8 @@ cell = "YES"
             table_spec=TableSpec(),
             json_filenames=[],
             title=None,
-            label=None)
+            label=None,
+        )
 
         self.assertEqual(
             ["tabular"],
@@ -177,7 +178,8 @@ cell = "YES"
                 table_spec=TableSpec(),
                 json_filenames=[],
                 title=title,
-                label=label)
+                label=label,
+            )
 
             envs_in_result = re.findall(r"\\begin{([^}]*)}", result)
 
@@ -200,7 +202,10 @@ cell = "YES"
                         self.spec_full_with_single_column),
                     json_filenames=["a"],
                     title=None,
-                    label=None)))
+                    label=None,
+                ),
+            ),
+        )
 
         for spec in (self.spec_only_body,
                      self.spec_body_and_footer_cell,
@@ -213,7 +218,10 @@ cell = "YES"
                         table_spec=m.parse_toml(spec),
                         json_filenames=["a", "b", "c", "d"],
                         title=None,
-                        label=None)))
+                        label=None,
+                    ),
+                ),
+            )
 
         for spec in (self.spec_body_and_footer_row,
                      self.spec_full):
@@ -235,7 +243,10 @@ cell = "YES"
                         json_filenames=["a", "b", "c", "d"],
 
                         title=None,
-                        label=None)))
+                        label=None,
+                    ),
+                ),
+            )
 
     def test_every_row_has_as_many_cells_as_there_are_columns(self):
         def get_column_count(template):
@@ -276,7 +287,8 @@ cell = "YES"
                 table_spec=m.parse_toml(spec),
                 json_filenames=json_filenames,
                 title=None,
-                label=None)
+                label=None,
+            )
 
             column_count = get_column_count(template)
             cell_counts = get_cell_counts(template)
@@ -288,21 +300,27 @@ cell = "YES"
             table_spec=m.parse_toml(self.spec_with_column_numbers),
             json_filenames=["a", "b", "c"],
             title=None,
-            label=None)
+            label=None,
+        )
 
         self.assertEqual(
             1,
-            len([line
-                 for line in template.splitlines()
-                 if re.match(r"^ *& *\(1\) *& *\(2\) *& *\(3\) *\\\\$",
-                             line) is not None]))
+            len([
+                line
+                for line in template.splitlines()
+                if re.match(
+                    r"^ *& *\(1\) *& *\(2\) *& *\(3\) *\\\\$", line,
+                ) is not None
+            ]),
+        )
 
     def test_no_column_numbers_in_header_if_unspecified(self):
         template = m.make_template(
             table_spec=m.parse_toml(self.spec_without_column_numbers),
             json_filenames=["a", "b", "c"],
             title=None,
-            label=None)
+            label=None,
+        )
 
         self.assertTrue(
             all(re.match(r"^ *& *\(1\)", line) is None
@@ -354,9 +372,10 @@ class TestFillTemplate(unittest.TestCase):
         #
         self.assertEqual(
             2,
-            len(re.findall("^warning: ",
-                           output.getvalue(),
-                           flags=re.MULTILINE)))
+            len(re.findall(
+                "^warning: ", output.getvalue(), flags=re.MULTILINE,
+            )),
+        )
 
     def test_float_conversion_specifiers(self):
         template = "lorem %(foo)f dolor %(bar::baz)f amet %(baz)f"
@@ -375,9 +394,10 @@ class TestFillTemplate(unittest.TestCase):
         #
         self.assertEqual(
             2,
-            len(re.findall("^warning: ",
-                           output.getvalue(),
-                           flags=re.MULTILINE)))
+            len(re.findall(
+                "^warning: ", output.getvalue(), flags=re.MULTILINE,
+            )),
+        )
 
     def test_float_conversion_specifiers_with_flags(self):
         template = (
@@ -398,9 +418,10 @@ class TestFillTemplate(unittest.TestCase):
         #
         self.assertEqual(
             2,
-            len(re.findall("^warning: ",
-                           output.getvalue(),
-                           flags=re.MULTILINE)))
+            len(re.findall(
+                "^warning: ", output.getvalue(), flags=re.MULTILINE,
+            )),
+        )
 
     def test_key_that_includes_parentheses(self):
         template = "lorem ipsum %(foo::(bar)::baz).03f amet"

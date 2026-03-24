@@ -11,9 +11,11 @@ from tomltable.types import (
 )
 
 
-def parse_toml_string_field(value: Any,
-                            field_name: str,
-                            parent_keys: str) -> str:
+def parse_toml_string_field(
+    value: Any,
+    field_name: str,
+    parent_keys: str,
+) -> str:
     if isinstance(value, str):
         return value
 
@@ -24,9 +26,11 @@ def parse_toml_string_field(value: Any,
     raise TableSpecificationError(msg)
 
 
-def parse_toml_bool_field(value: Any,
-                          field_name: str,
-                          parent_keys: str) -> bool:
+def parse_toml_bool_field(
+    value: Any,
+    field_name: str,
+    parent_keys: str,
+) -> bool:
     if isinstance(value, bool):
         return value
 
@@ -37,9 +41,11 @@ def parse_toml_bool_field(value: Any,
     raise TableSpecificationError(msg)
 
 
-def parse_toml_tex_length_field(value: Any,
-                                field_name: str,
-                                parent_keys: str) -> TeXLength:
+def parse_toml_tex_length_field(
+    value: Any,
+    field_name: str,
+    parent_keys: str,
+) -> TeXLength:
     try:
         return TeXLength(value)
     except ValueError as error:
@@ -90,16 +96,21 @@ def parse_toml_cell_spec(obj: dict, parent_key: str) -> CellSpec:
 
     for key, value in obj.items():
         if key in ("label", "coef"):
-            setattr(result,
-                    key,
-                    parse_toml_string_field(
-                        value, key, f"{parent_key}.cell"))
+            setattr(
+                result,
+                key,
+                parse_toml_string_field(
+                    value, key, f"{parent_key}.cell",
+                ),
+            )
         elif key == "cell":
             result.cell = parse_toml_field_cell(
-                value, f"{parent_key}.cell")
+                value, f"{parent_key}.cell",
+            )
         elif key == "padding-bottom":
             result.padding_bottom = parse_toml_tex_length_field(
-                value, key, f"{parent_key}.cell")
+                value, key, f"{parent_key}.cell",
+            )
         else:
             msg = (
                 f"Field '{key}' for '{parent_key}.cell' is not "
@@ -131,12 +142,14 @@ def parse_toml_row_spec(obj: dict, parent_key: str) -> RowSpec:
     for key, value in obj.items():
         if key == "label":
             result.label = parse_toml_string_field(
-                value, key, f"{parent_key}.row")
+                value, key, f"{parent_key}.row",
+            )
         elif key == "cell":
             cell = parse_toml_field_cell(value, f"{parent_key}.row")
         elif key == "padding-bottom":
             result.padding_bottom = parse_toml_tex_length_field(
-                value, key, f"{parent_key}.row")
+                value, key, f"{parent_key}.row",
+            )
         else:
             msg = (
                 f"Field '{key}' for '{parent_key}.row' is not 'label', "
@@ -168,7 +181,8 @@ def parse_toml_header(obj: dict) -> HeaderSpec:
 
         if key == "add-column-numbers":
             result.add_column_numbers = parse_toml_bool_field(
-                value, key, "header")
+                value, key, "header",
+            )
         elif key == "cell":
             result.cell_specs = [parse_toml_cell_spec(x, "header")
                                  for x in value]
@@ -186,8 +200,10 @@ def parse_toml_header(obj: dict) -> HeaderSpec:
     return result
 
 
-def parse_toml_other_section(obj: dict,
-                             parent_key: str) -> OtherSectionSpec:
+def parse_toml_other_section(
+    obj: dict,
+    parent_key: str,
+) -> OtherSectionSpec:
     result = OtherSectionSpec()
 
     for key, value in obj.items():
@@ -237,8 +253,9 @@ def parse_toml(toml_spec: dict) -> TableSpec:
 
 
 def confirm_consistent_column_count(
-        table_spec: TableSpec,
-        json_filenames: list[str]) -> None:
+    table_spec: TableSpec,
+    json_filenames: list[str],
+) -> None:
     sections = ("header", "body", "footer")
 
     def get_and_confirm_counts(section):

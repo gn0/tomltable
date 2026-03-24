@@ -34,7 +34,8 @@ def adapt_cell_value_to_column(value: str, column_number: int) -> str:
             r"([-# .0-9]*[dfs])"
         ),
         fr"\1%({column_number}::\2)\3",
-        value)
+        value,
+    )
 
 
 def make_rows_for_cell_spec_custom(
@@ -51,7 +52,8 @@ def make_rows_for_cell_spec_custom(
 
         for column_number in range(1, column_count + 1):
             value = adapt_cell_value_to_column(
-                cell_value, column_number)
+                cell_value, column_number,
+            )
 
             row += f" & {escape_tex(value)}"
 
@@ -122,10 +124,12 @@ def make_rows_for_row_spec(
         )
         raise TableSpecificationError(msg)
 
-    row = (r"{} & {} \\"
-           .format(escape_tex(spec.label or ""),
-                   " & ".join(escape_tex(value)
-                              for value in cell_values)))
+    row = r"{} & {} \\".format(
+        escape_tex(spec.label or ""),
+        " & ".join(
+            escape_tex(value) for value in cell_values
+        ),
+    )
 
     if padding_bottom is not None:
         row += f"[{padding_bottom}]"
@@ -275,4 +279,5 @@ def fill_template(
             r"[-# .0-9]*[dfs]"
         ),
         replace,
-        template)
+        template,
+    )
