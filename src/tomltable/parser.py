@@ -184,11 +184,13 @@ def parse_toml_header(obj: dict) -> HeaderSpec:
                 value, key, "header",
             )
         elif key == "cell":
-            result.cell_specs = [parse_toml_cell_spec(x, "header")
-                                 for x in value]
+            result.cell_specs = [
+                parse_toml_cell_spec(x, "header") for x in value
+            ]
         elif key == "row":
-            result.row_specs = [parse_toml_row_spec(x, "header")
-                                for x in value]
+            result.row_specs = [
+                parse_toml_row_spec(x, "header") for x in value
+            ]
         else:
             msg = (
                 "Second-level key for 'header' should be 'cell', "
@@ -217,11 +219,13 @@ def parse_toml_other_section(
             raise TableSpecificationError(msg)
 
         if key == "cell":
-            result.cell_specs = [parse_toml_cell_spec(x, parent_key)
-                                 for x in value]
+            result.cell_specs = [
+                parse_toml_cell_spec(x, parent_key) for x in value
+            ]
         elif key == "row":
-            result.row_specs = [parse_toml_row_spec(x, parent_key)
-                                for x in value]
+            result.row_specs = [
+                parse_toml_row_spec(x, parent_key) for x in value
+            ]
         else:
             msg = (
                 f"Second-level key for '{parent_key}' should be 'cell' "
