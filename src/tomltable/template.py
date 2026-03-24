@@ -56,7 +56,7 @@ def make_rows_for_cell_spec_custom(
             value = adapt_cell_value_to_column(
                 cell_value, column_number)
 
-            row += " & {}".format(escape_tex(value))
+            row += f" & {escape_tex(value)}"
 
         row += " \\\\"
 

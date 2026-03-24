@@ -49,7 +49,7 @@ def add_thousands_separator(string: str) -> str:
         for position in range(len(number) - 3, 0, -3):
             number = number[:position] + "," + number[position:]
 
-        return "{}{}".format(match.group(1), number)
+        return f"{match.group(1)}{number}"
 
     return re.sub(r"(^|[^.0-9])([0-9]+)", replace, string)
 
