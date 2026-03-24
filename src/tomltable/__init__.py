@@ -2,7 +2,7 @@ import json
 import sys
 import re
 
-from typing import Any, Dict, Generator, List, Tuple
+from typing import Any, Dict, Generator, List
 
 import click
 import toml
@@ -16,7 +16,7 @@ def load_json_file(filename: str) -> Dict:
         return json.load(json_file)
 
 
-def traverse(obj: Any) -> Generator[Tuple[str | None, Any], None, None]:
+def traverse(obj: Any) -> Generator[tuple[str | None, Any], None, None]:
     if isinstance(obj, dict):
         for key, obj2 in obj.items():
             for subpath, value in traverse(obj2):
