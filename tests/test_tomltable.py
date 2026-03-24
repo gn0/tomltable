@@ -188,7 +188,7 @@ cell = "YES"
         def get_column_count(template):
             match = re.search(r"\\begin{tabular}{l(c+)}", template)
 
-            self.assertIsNotNone(match)
+            assert match is not None  # noqa: S101
 
             return len(match.group(1))
 
@@ -241,7 +241,7 @@ cell = "YES"
         def get_column_count(template):
             match = re.search(r"\\begin{tabular}{l(c+)}", template)
 
-            self.assertIsNotNone(match)
+            assert match is not None  # noqa: S101
 
             return len(match.group(1))
 
