@@ -2,6 +2,7 @@ import json
 import re
 import sys
 from collections.abc import Generator
+from pathlib import Path
 from typing import Any
 
 import click
@@ -12,7 +13,7 @@ from tomltable.template import fill_template, make_template
 
 
 def load_json_file(filename: str) -> dict:
-    with open(filename, "r") as json_file:
+    with Path(filename).open() as json_file:
         return json.load(json_file)
 
 
