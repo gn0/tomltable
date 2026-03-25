@@ -2,8 +2,9 @@ import dataclasses as dcls
 import re
 from dataclasses import dataclass
 
-
 class TeXLength(str):
+    __slots__ = ()
+
     def __new__(cls, value: str):
         if (not isinstance(value, str)
             or re.match(
