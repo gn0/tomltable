@@ -30,14 +30,14 @@ class CellSpec:
 @dataclass
 class RowSpec:
     label: str | None                = None
-    cell: list[str]                  = dcls.field(default=[])
+    cell: list[str]                  = dcls.field(default_factory=lambda: [])  # noqa: PIE807
     padding_bottom: TeXLength | None = None
 
 
 @dataclass
 class OtherSectionSpec:
-    cell_specs: list[CellSpec] = dcls.field(default=[])
-    row_specs: list[RowSpec]   = dcls.field(default=[])
+    cell_specs: list[CellSpec] = dcls.field(default_factory=lambda: [])  # noqa: PIE807
+    row_specs: list[RowSpec]   = dcls.field(default_factory=lambda: [])  # noqa: PIE807
 
 
 @dataclass
