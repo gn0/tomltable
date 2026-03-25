@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal
 
 from tomltable.errors import TableSpecificationError
 from tomltable.types import (
@@ -262,7 +262,9 @@ def confirm_consistent_column_count(
 ) -> None:
     sections = ("header", "body", "footer")
 
-    def get_and_confirm_counts(section):
+    def get_and_confirm_counts(
+        section: Literal["header", "body", "footer"],
+    ) -> list[int]:
         counts_in_section = [
             len(row.cell)
             for row in (
