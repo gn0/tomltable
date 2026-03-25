@@ -240,7 +240,9 @@ def fill_template(
     *,
     ignore_missing_keys: bool = False,
 ) -> str:
-    def replace(match: regex.Match) -> str:
+    def replace(
+        match: regex.Match, # ty: ignore[invalid-type-form]
+    ) -> str:
         specifier = match.group(0)[len(match.group(1)):]
 
         # Drop surrounding parentheses.
