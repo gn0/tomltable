@@ -14,7 +14,7 @@ dist/tomltable-%.tar.gz:
 
 .PHONY: test
 test:
-	uv run pytest -v --cov=src
+	uv run pytest -v --doctest-modules --cov=src
 
 .PHONY: upload
 upload: $(TARGETS)
