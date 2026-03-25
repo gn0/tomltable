@@ -2,10 +2,13 @@ import dataclasses as dcls
 import re
 from dataclasses import dataclass
 
+from typing_extensions import Self
+
+
 class TeXLength(str):
     __slots__ = ()
 
-    def __new__(cls, value: str):
+    def __new__(cls, value: str) -> Self:
         if (not isinstance(value, str)
             or re.match(
                 "^(-?[0-9]*[.])?[0-9]+(pt|mm|cm|in|ex|em|mu|sp)$",
