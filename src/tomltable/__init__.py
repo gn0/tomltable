@@ -18,7 +18,9 @@ def load_json_file(filename: str) -> dict:
         return json.load(json_file)
 
 
-def traverse(obj: Any) -> Generator[tuple[str | None, Any], None, None]:
+def traverse(
+    obj: Any,  # noqa: ANN401
+) -> Generator[tuple[str | None, Any], None, None]:
     """Recurse over a nested dict/list yielding paths and values.
 
     This function flattens the structure by generating path strings

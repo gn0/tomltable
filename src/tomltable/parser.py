@@ -12,7 +12,7 @@ from tomltable.types import (
 
 
 def parse_toml_string_field(
-    value: Any,
+    value: Any,  # noqa: ANN401
     field_name: str,
     parent_keys: str,
 ) -> str:
@@ -46,7 +46,7 @@ def parse_toml_string_field(
 
 
 def parse_toml_bool_field(
-    value: Any,
+    value: Any,  # noqa: ANN401
     field_name: str,
     parent_keys: str,
 ) -> bool:
@@ -80,7 +80,7 @@ def parse_toml_bool_field(
 
 
 def parse_toml_tex_length_field(
-    value: Any,
+    value: Any,  # noqa: ANN401
     field_name: str,
     parent_keys: str,
 ) -> TeXLength:
@@ -114,7 +114,10 @@ def parse_toml_tex_length_field(
         raise TableSpecificationError(msg) from error
 
 
-def parse_toml_field_cell(value: Any, parent_keys: str) -> list[str]:
+def parse_toml_field_cell(
+    value: Any,  # noqa: ANN401
+    parent_keys: str,
+) -> list[str]:
     """Parse the value of a 'cell' field into a list of strings.
 
     This function ensures that the input value is either a string or a
