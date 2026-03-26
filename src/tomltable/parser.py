@@ -1,6 +1,9 @@
 from typing import Any, Literal
 
-from tomltable.errors import TableSpecificationError
+from tomltable.errors import (
+    TableJsonMismatchError,
+    TableSpecificationError,
+)
 from tomltable.types import (
     CellSpec,
     HeaderSpec,
@@ -475,11 +478,11 @@ def confirm_consistent_column_count(
             value.
 
     Raises:
+        TableJsonMismatchError: If the spec column count doesn't match
+            the number of JSON files.
         TableSpecificationError: If internal row counts differ across
             rows or sections, or if the total column count does not
             match JSON inputs.
-        Exception: If the spec column count doesn't match the number of
-            JSON files.
 
     """
     sections = ("header", "body", "footer")
@@ -554,6 +557,6 @@ def confirm_consistent_column_count(
                 f"column{plural_section} in the specification but "
                 f"{count_json} JSON file{plural_json} in the arguments."
             )
-            raise Exception(msg)
+            raise TableJsonMismatchError(msg)
 
         break

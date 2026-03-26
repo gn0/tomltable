@@ -199,9 +199,9 @@ def main(
     argument parsing via decorators.
 
     Raises:
-        ValueError: If incompatible command-line options are provided.
+        TableJsonMismatchError: If TOML spec doesn't match JSON files.
         TableSpecificationError: If TOML spec fails validation checks.
-        Exception: If TOML spec doesn't match JSON files.
+        ValueError: If incompatible command-line options are provided.
 
     """
     if not debug:
