@@ -1,8 +1,8 @@
 
 
 class TableJsonMismatchError(ValueError):
-    pass
+    """Raised if spec has more/fewer columns than there are JSONs."""
 
 
 class TableSpecificationError(ValueError):
-    pass
+    """Raised if TOML table spec has a validation error."""
